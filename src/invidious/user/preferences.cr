@@ -22,6 +22,7 @@ struct Preferences
   @[YAML::Field(converter: Preferences::BoolToString)]
   property dark_mode : String = CONFIG.default_user_preferences.dark_mode
   property latest_only : Bool = CONFIG.default_user_preferences.latest_only
+  property hide_shorts : Bool = CONFIG.default_user_preferences.hide_shorts
   property listen : Bool = CONFIG.default_user_preferences.listen
   property local : Bool = CONFIG.default_user_preferences.local
   property watch_history : Bool = CONFIG.default_user_preferences.watch_history

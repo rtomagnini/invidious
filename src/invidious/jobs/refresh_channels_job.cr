@@ -35,7 +35,7 @@ class Invidious::Jobs::RefreshChannelsJob < Invidious::Jobs::BaseJob
               lim_fibers = max_fibers
 
               LOGGER.trace("RefreshChannelsJob: #{id} fiber : Updating DB")
-              Invidious::Database::Channels.update_author(id, channel.author)
+              Invidious::Database::Channels.update_author(id, channel.author, channel.shorts_continuation)
 
               if backoff > 2.minutes
                 backoff /= 2

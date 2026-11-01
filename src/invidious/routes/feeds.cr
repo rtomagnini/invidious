@@ -54,6 +54,7 @@ module Invidious::Routes::Feeds
 
     begin
       trending, plid = Invidious::Feeds::Trending.fetch(trending_type, region, locale)
+      Invidious::Videos::Shorts.filter(trending, preferences.hide_shorts)
     rescue ex
       return Errors.error_template(500, ex)
     end
@@ -190,6 +191,7 @@ module Invidious::Routes::Feeds
         author_verified:    false,
         author_thumbnail:   nil,
         badges:             VideoBadges::None,
+        is_short:           nil,
       })
     end
 
@@ -442,6 +444,7 @@ module Invidious::Routes::Feeds
           live_now:           video.live_now,
           premiere_timestamp: video.premiere_timestamp,
           views:              video.views,
+          is_short:           Invidious::Channels::Shorts.classify_video(id, author, video.ucid),
         })
 
         was_insert = Invidious::Database::ChannelVideos.insert(video, with_premiere_timestamp: true)

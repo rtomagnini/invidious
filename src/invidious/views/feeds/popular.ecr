@@ -13,6 +13,7 @@
 
 <div class="pure-g">
 <% popular_videos.each do |item| %>
+    <% next if env.get("preferences").as(Preferences).hide_shorts && item.is_short == true %>
     <%= rendered "components/item" %>
 <% end %>
 </div>

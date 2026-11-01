@@ -1043,3 +1043,8 @@ default_user_preferences:
   ## Default: false
   ##
   #extend_desc: false
+
+  ## Hide videos explicitly identified by YouTube as Shorts.
+  ## Videos whose classification is unknown remain visible.
+  ## Default: true
+  #hide_shorts: true

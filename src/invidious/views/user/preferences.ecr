@@ -217,6 +217,12 @@
             <legend><%= I18n.translate(locale, "preferences_category_misc") %></legend>
 
             <div class="pure-control-group">
+                <label for="hide_shorts"><%= I18n.translate(locale, "preferences_hide_shorts_label") %></label>
+                <input name="hide_shorts" id="hide_shorts" type="checkbox" <% if preferences.hide_shorts %>checked<% end %>>
+                <span class="preference-description"><%= I18n.translate(locale, "preferences_hide_shorts_description") %></span>
+            </div>
+
+            <div class="pure-control-group">
                 <label for="automatic_instance_redirect"><%= I18n.translate(locale, "preferences_automatic_instance_redirect_label") %></label>
                 <input name="automatic_instance_redirect" id="automatic_instance_redirect" type="checkbox" <% if preferences.automatic_instance_redirect %>checked<% end %>>
             </div>

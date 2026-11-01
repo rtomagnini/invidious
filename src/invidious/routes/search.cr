@@ -77,12 +77,14 @@ module Invidious::Routes::Search
       end
 
       redirect_url = Invidious::Frontend::Misc.redirect_url(env)
+      show_next = items.size >= 20
+      Invidious::Videos::Shorts.filter(items, preferences.hide_shorts)
 
       # Pagination
       page_nav_html = Frontend::Pagination.nav_numeric(locale,
         base_url: "/search?#{query.to_http_params}",
         current_page: query.page,
-        show_next: (items.size >= 20)
+        show_next: show_next
       )
 
       if query.type == Invidious::Search::Query::Type::Channel
@@ -113,6 +115,8 @@ module Invidious::Routes::Search
 
     begin
       items = Invidious::Search::Hashtag.fetch_hashtag(hashtag, page)
+      show_next = items.size >= 60
+      Invidious::Videos::Shorts.filter(items, env.get("preferences").as(Preferences).hide_shorts)
     rescue ex
       return Errors.error_template(500, ex)
     end
@@ -122,7 +126,7 @@ module Invidious::Routes::Search
     page_nav_html = Frontend::Pagination.nav_numeric(locale,
       base_url: "/hashtag/#{hashtag_encoded}",
       current_page: page,
-      show_next: (items.size >= 60)
+      show_next: show_next
     )
 
     templated "hashtag"

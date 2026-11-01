@@ -523,5 +523,7 @@
     "preferences_search_privacy_label": "Privacidad de busquedas: ",
     "preferences_search_privacy_description": "Al activar esta preferencia, se evitará que tus búsquedas se guarden en el historial del navegador.",
     "comments_youtube_disabled_text": "Los comentarios de YouTube están desactivados en este video",
-    "comments_invidious_disabled_text": "Los comentarios están ocultos según las preferencias del usuario"
+    "comments_invidious_disabled_text": "Los comentarios están ocultos según las preferencias del usuario",
+    "preferences_hide_shorts_label": "Ocultar Shorts de YouTube:",
+    "preferences_hide_shorts_description": "Oculta los Shorts identificados en suscripciones, búsquedas y sugerencias de videos."
 }

@@ -135,6 +135,8 @@ module Invidious::Routes::PreferencesRoute
     latest_only ||= "off"
     latest_only = latest_only == "on"
 
+    hide_shorts = env.params.body["hide_shorts"]? == "on"
+
     unseen_only = env.params.body["unseen_only"]?.try &.as(String)
     unseen_only ||= "off"
     unseen_only = unseen_only == "on"
@@ -161,6 +163,7 @@ module Invidious::Routes::PreferencesRoute
       continue_autoplay:           continue_autoplay,
       dark_mode:                   dark_mode,
       latest_only:                 latest_only,
+      hide_shorts:                 hide_shorts,
       listen:                      listen,
       local:                       local,
       watch_history:               watch_history,

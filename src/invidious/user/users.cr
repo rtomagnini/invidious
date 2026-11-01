@@ -30,10 +30,12 @@ module Invidious::User::Users
 
     notifications = Invidious::Database::Users.select_notifications(user)
     view_name = "subscriptions_#{sha256(user.email)}"
+    shorts_filter = user.preferences.hide_shorts ? "is_short IS NOT TRUE" : "TRUE"
 
     if user.preferences.notifications_only && !notifications.empty?
       # Only show notifications
       notifications = Invidious::Database::ChannelVideos.select(notifications)
+      Invidious::Videos::Shorts.filter(notifications, user.preferences.hide_shorts)
       videos = [] of ChannelVideo
 
       notifications.sort_by!(&.published).reverse!
@@ -54,11 +56,11 @@ module Invidious::User::Users
           # Show latest video from a channel that a user hasn't watched
           # "unseen_only" isn't really correct here, more accurate would be "unwatched_only"
 
-          videos = PG_DB.query_all("SELECT DISTINCT ON (ucid) * FROM #{view_name} WHERE NOT id = ANY ($1::text[]) ORDER BY ucid, published DESC", user.watched, as: ChannelVideo)
+          videos = PG_DB.query_all("SELECT DISTINCT ON (ucid) * FROM #{view_name} WHERE #{shorts_filter} AND NOT id = ANY ($1::text[]) ORDER BY ucid, published DESC", user.watched, as: ChannelVideo)
         else
           # Show latest video from each channel
 
-          videos = PG_DB.query_all("SELECT DISTINCT ON (ucid) * FROM #{view_name} ORDER BY ucid, published DESC", as: ChannelVideo)
+          videos = PG_DB.query_all("SELECT DISTINCT ON (ucid) * FROM #{view_name} WHERE #{shorts_filter} ORDER BY ucid, published DESC", as: ChannelVideo)
         end
 
         videos.sort_by!(&.published).reverse!
@@ -66,11 +68,11 @@ module Invidious::User::Users
         if user.preferences.unseen_only
           # Only show unwatched
 
-          videos = PG_DB.query_all("SELECT * FROM #{view_name} WHERE NOT id = ANY ($1::text[]) ORDER BY published DESC LIMIT $2 OFFSET $3", user.watched, limit, offset, as: ChannelVideo)
+          videos = PG_DB.query_all("SELECT * FROM #{view_name} WHERE #{shorts_filter} AND NOT id = ANY ($1::text[]) ORDER BY published DESC LIMIT $2 OFFSET $3", user.watched, limit, offset, as: ChannelVideo)
         else
           # Sort subscriptions as normal
 
-          videos = PG_DB.query_all("SELECT * FROM #{view_name} ORDER BY published DESC LIMIT $1 OFFSET $2", limit, offset, as: ChannelVideo)
+          videos = PG_DB.query_all("SELECT * FROM #{view_name} WHERE #{shorts_filter} ORDER BY published DESC LIMIT $1 OFFSET $2", limit, offset, as: ChannelVideo)
         end
       end
 

@@ -21,7 +21,7 @@ module Invidious::Database::Channels
     if update_on_conflict
       request += <<-SQL
         ON CONFLICT (id) DO UPDATE
-        SET author = $2, updated = $3
+        SET author = $2, updated = $3, shorts_continuation = $6
         SQL
     end
 
@@ -32,14 +32,14 @@ module Invidious::Database::Channels
   #  Update
   # -------------------
 
-  def update_author(id : String, author : String)
+  def update_author(id : String, author : String, shorts_continuation : String? = nil)
     request = <<-SQL
       UPDATE channels
-      SET updated = now(), author = $1, deleted = false
+      SET updated = now(), author = $1, deleted = false, shorts_continuation = $3
       WHERE id = $2
       SQL
 
-    PG_DB.exec(request, author, id)
+    PG_DB.exec(request, author, id, shorts_continuation)
   end
 
   def update_subscription_time(id : String)
@@ -107,14 +107,31 @@ module Invidious::Database::ChannelVideos
 
     request = <<-SQL
       INSERT INTO channel_videos
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       ON CONFLICT (id) DO UPDATE
       SET title = $2, published = $3, updated = $4, ucid = $5,
-          author = $6, length_seconds = $7, live_now = $8, #{last_items}
+          author = $6, length_seconds = $7, live_now = $8, #{last_items},
+          is_short = COALESCE($11, channel_videos.is_short)
       RETURNING (xmax=0) AS was_insert
       SQL
 
-    return PG_DB.query_one(request, *video.to_tuple, as: Bool)
+    was_insert = PG_DB.query_one(request, *video.to_tuple, as: Bool)
+    if !was_insert && !video.is_short.nil?
+      Invidious::Database::Users.feed_needs_update(video.ucid)
+    end
+    was_insert
+  end
+
+  # Updating classifications also invalidates the materialized subscription feeds.
+  def classify(ucid : String, ids : Array(String), is_short : Bool)
+    return if ids.empty?
+
+    changed = PG_DB.query_all(<<-SQL, ucid, ids, is_short, as: String)
+      UPDATE channel_videos SET is_short = $3
+      WHERE ucid = $1 AND id = ANY($2) AND is_short IS DISTINCT FROM $3
+      RETURNING id
+      SQL
+    Invidious::Database::Users.feed_needs_update(ucid) unless changed.empty?
   end
 
   # -------------------

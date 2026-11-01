@@ -1,4 +1,5 @@
 require "../helpers/serialized_yt_data"
+require "../videos/shorts"
 
 # This file contains helper methods to parse the Youtube API json data into
 # neat little packages we can use
@@ -169,6 +170,7 @@ private module Parsers
         author_verified:    author_verified,
         author_thumbnail:   author_thumbnail,
         badges:             badges,
+        is_short:           Invidious::Videos::Shorts.from_renderer(item_contents),
       })
     end
 
@@ -667,6 +669,7 @@ private module Parsers
         author_verified:    false,
         author_thumbnail:   nil,
         badges:             VideoBadges::None,
+        is_short:           true,
       })
     end
 
@@ -737,6 +740,7 @@ private module Parsers
           author_verified:    false,
           author_thumbnail:   nil,
           badges:             VideoBadges::None,
+          is_short:           Invidious::Videos::Shorts.from_renderer(item_contents),
         })
         # If it's a playlist, it's content_type would be "LOCKUP_CONTENT_TYPE_PLAYLIST"
         # If it's a podcast, it's content_type would be "LOCKUP_CONTENT_TYPE_PODCAST"
@@ -934,6 +938,7 @@ private module Parsers
         author_verified:    false,
         author_thumbnail:   nil,
         badges:             VideoBadges::None,
+        is_short:           true,
       })
     end
 

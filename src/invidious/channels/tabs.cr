@@ -29,7 +29,12 @@ module Invidious::Channel::Tabs
     continuation ||= make_initial_videos_ctoken(ucid, sort_by)
     initial_data = YoutubeAPI.browse(continuation: continuation)
 
-    return extract_items(initial_data, author, ucid)
+    items, next_continuation = extract_items(initial_data, author, ucid)
+    items.map! do |item|
+      item.is_short = false if item.is_a?(SearchVideo) && item.is_short.nil?
+      item
+    end
+    return items, next_continuation
   end
 
   def get_60_videos(channel : AboutChannel, *, continuation : String? = nil, sort_by = "newest")
@@ -56,10 +61,19 @@ module Invidious::Channel::Tabs
   # -------------------
 
   def get_shorts(channel : AboutChannel, *, continuation : String? = nil, sort_by = "newest")
-    continuation ||= make_initial_shorts_ctoken(channel.ucid, sort_by)
+    get_shorts(channel.author, channel.ucid, continuation: continuation, sort_by: sort_by)
+  end
+
+  def get_shorts(author : String, ucid : String, *, continuation : String? = nil, sort_by = "newest")
+    continuation ||= make_initial_shorts_ctoken(ucid, sort_by)
     initial_data = YoutubeAPI.browse(continuation: continuation)
 
-    return extract_items(initial_data, channel.author, channel.ucid)
+    items, next_continuation = extract_items(initial_data, author, ucid)
+    items.map! do |item|
+      item.is_short = true if item.is_a?(SearchVideo)
+      item
+    end
+    return items, next_continuation
   end
 
   # -------------------

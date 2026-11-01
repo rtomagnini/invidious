@@ -52,6 +52,7 @@ module Invidious::Videos::Parser
       "short_view_count" => JSON::Any.new(short_view_count || "0"),
       "author_verified"  => JSON::Any.new(author_verified),
       "published"        => JSON::Any.new(published || ""),
+      "is_short"         => JSON::Any.new(Shorts.from_renderer(related) == true ? "true" : "unknown"),
     }
   end
 

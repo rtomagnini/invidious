@@ -54,6 +54,13 @@ module Invidious::Routes::Watch
       return Errors.error_template(500, ex)
     end
 
+    related_videos = video.related_videos
+    if preferences.hide_shorts
+      known_shorts = Invidious::Database::ChannelVideos.select(related_videos.compact_map(&.["id"]?))
+        .select { |v| v.is_short == true }.map(&.id).to_set
+      related_videos.reject! { |rv| rv["is_short"]? == "true" || known_shorts.includes?(rv["id"]?) }
+    end
+
     if preferences.annotations_subscribed &&
        subscriptions.includes?(video.ucid) &&
        (env.params.query["iv_load_policy"]? || "1") == "1"

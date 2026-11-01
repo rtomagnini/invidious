@@ -28,6 +28,7 @@ struct ConfigPreferences
   property continue_autoplay : Bool = true
   property dark_mode : String = ""
   property latest_only : Bool = false
+  property hide_shorts : Bool = true
   property listen : Bool = false
   property local : Bool = false
   property locale : String = "en-US"

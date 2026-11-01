@@ -6,6 +6,8 @@ struct InvidiousChannel
   property updated : Time
   property deleted : Bool
   property subscribed : Time?
+  # nil starts the historical scan; an empty string means it is complete.
+  property shorts_continuation : String? = nil
 end
 
 struct ChannelVideo
@@ -21,6 +23,7 @@ struct ChannelVideo
   property live_now : Bool = false
   property premiere_timestamp : Time? = nil
   property views : Int64? = nil
+  property is_short : Bool? = nil
 
   def to_json(locale, json : JSON::Builder)
     json.object do
@@ -33,6 +36,7 @@ struct ChannelVideo
       end
 
       json.field "lengthSeconds", self.length_seconds
+      json.field "isShort", self.is_short
 
       json.field "author", self.author
       json.field "authorId", self.ucid
@@ -190,15 +194,20 @@ module Invidious::Channels::Channels
     LOGGER.trace("fetch_channel: #{ucid} : author = #{author}, auto_generated = #{auto_generated}")
 
     channel = InvidiousChannel.new({
-      id:         ucid,
-      author:     author,
-      updated:    Time.utc,
-      deleted:    false,
-      subscribed: nil,
+      id:                  ucid,
+      author:              author,
+      updated:             Time.utc,
+      deleted:             false,
+      subscribed:          nil,
+      shorts_continuation: nil,
     })
 
     LOGGER.trace("fetch_channel: #{ucid} : Downloading channel videos page")
     videos, continuation = IV::Channel::Tabs.get_videos(channel)
+
+    short_ids, shorts_continuation = Invidious::Channels::Shorts.refresh(channel)
+    channel.shorts_continuation = shorts_continuation
+    Invidious::Database::ChannelVideos.classify(ucid, videos.select(SearchVideo).reject { |v| v.is_short == true }.map(&.id), false)
 
     LOGGER.trace("fetch_channel: #{ucid} : Extracting videos from channel RSS feed")
     rss.xpath_nodes("//default:feed/default:entry", namespaces).each do |entry|
@@ -242,6 +251,7 @@ module Invidious::Channels::Channels
         live_now:           live_now,
         premiere_timestamp: premiere_timestamp,
         views:              views,
+        is_short:           short_ids.includes?(video_id) ? true : channel_video.try(&.is_short),
       })
 
       LOGGER.trace("fetch_channel: #{ucid} : video #{video_id} : Updating or inserting video")
@@ -277,6 +287,7 @@ module Invidious::Channels::Channels
             live_now:           video.badges.live_now?,
             premiere_timestamp: video.premiere_timestamp,
             views:              video.views,
+            is_short:           video.is_short,
           })
 
           # We are notified of Red videos elsewhere (PubSub), which includes a correct published date,

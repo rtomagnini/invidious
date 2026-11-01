@@ -30,7 +30,7 @@ def create_licence_tr(path, file_name, licence_name, licence_link, source_locati
 
   # New lines are removed as to allow for using String.join and StringLiteral.split
   # to get a clean list of each table row.
-  tr.gsub('\n', "")
+  tr.gsub('\n', "").gsub('\r', "")
 end
 
 # TODO Use videojs-dependencies.yml to generate license info for videojs javascript

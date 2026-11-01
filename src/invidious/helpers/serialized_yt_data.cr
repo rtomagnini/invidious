@@ -26,6 +26,7 @@ struct SearchVideo
   property author_verified : Bool
   property author_thumbnail : String?
   property badges : VideoBadges
+  property is_short : Bool? = nil
 
   def to_xml(auto_generated, query_params, xml : XML::Builder)
     query_params["v"] = self.id
@@ -119,6 +120,7 @@ struct SearchVideo
       json.field "published", self.published.to_unix
       json.field "publishedText", I18n.translate(locale, "`x` ago", recode_date(self.published, locale))
       json.field "lengthSeconds", self.length_seconds
+      json.field "isShort", self.is_short
       json.field "liveNow", self.badges.live_now?
       json.field "premium", self.badges.premium?
       json.field "isUpcoming", self.upcoming?

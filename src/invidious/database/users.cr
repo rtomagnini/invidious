@@ -122,12 +122,17 @@ module Invidious::Database::Users
   def add_multiple_notifications(channel_id : String, video_ids : Array(String))
     request = <<-SQL
       UPDATE users
-      SET notifications = array_cat(notifications, $1),
+      SET notifications = array_cat(notifications, ARRAY(
+        SELECT candidate.video_id FROM unnest($1::text[]) AS candidate(video_id)
+        WHERE NOT COALESCE((preferences::jsonb ->> 'hide_shorts')::boolean, $3)
+          OR NOT EXISTS (SELECT 1 FROM channel_videos cv
+            WHERE cv.id = candidate.video_id AND cv.is_short IS TRUE)
+      )),
           feed_needs_update = true
       WHERE $2 = ANY(subscriptions)
       SQL
 
-    PG_DB.exec(request, video_ids, channel_id)
+    PG_DB.exec(request, video_ids, channel_id, CONFIG.default_user_preferences.hide_shorts)
   end
 
   def remove_notification(user : User, vid : String)

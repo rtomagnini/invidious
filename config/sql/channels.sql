@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.channels
   updated timestamp with time zone,
   deleted boolean,
   subscribed timestamp with time zone,
+  shorts_continuation text,
   CONSTRAINT channels_id_key UNIQUE (id)
 );
 

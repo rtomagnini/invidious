@@ -509,5 +509,6 @@
     "timeline_parse_error_show_technical_details": "Show technical details",
     "dmca_content": "This video cannot be downloaded on this instance due to a DMCA/copyright infringement letter sent to the instance administrator.",
     "preferences_hide_shorts_label": "Hide YouTube Shorts:",
-    "preferences_hide_shorts_description": "Hide confirmed Shorts in subscriptions, search and video suggestions."
+    "preferences_hide_shorts_description": "Hide confirmed Shorts in subscriptions, search and video suggestions.",
+    "video_details_ai_made": "AI Made video?:"
 }

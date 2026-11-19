@@ -1,4 +1,8 @@
 {
+    "subscription_manager_search": "Buscar um canal",
+    "subscription_manager_no_channels": "Você ainda não tem inscrições.",
+    "subscription_manager_no_matches": "Nenhum canal corresponde à sua busca.",
+    "subscription_manager_edit_filter": "Editar filtro",
     "header_notifications": "Notificações",
     "preferences_unseen_only_description": "Mostra o botão de olho para marcar vídeos como assistidos no feed de inscrições.",
     "header_feed_navigation": "Feeds",

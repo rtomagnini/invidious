@@ -1,4 +1,24 @@
 module Invidious::Routes::Images
+  # Resolve logos on demand so rendering the subscription list only needs local data.
+  def self.channel_avatar(env)
+    ucid = env.params.url["ucid"]
+    if ucid.matches?(/\AUC[A-Za-z0-9_-]{22}\z/) && (user = env.get?("user").try &.as(User)) && user.subscriptions.includes?(ucid)
+      begin
+        channel = Invidious::Channels::About.get_about_info(ucid)
+        avatar = URI.parse(channel.author_thumbnail).path
+        if avatar.starts_with?("/") && !avatar.starts_with?("//")
+          env.response.headers["Cache-Control"] = "private, max-age=86400"
+          return env.redirect("/ggpht#{avatar}")
+        end
+      rescue ex
+        LOGGER.debug("Could not resolve avatar for #{ucid}: #{ex.message}")
+      end
+    end
+
+    env.response.status_code = 404
+    ""
+  end
+
   # Avatars, banners and other large image assets.
   def self.ggpht(env)
     url = env.request.path.lchop("/ggpht")

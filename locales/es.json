@@ -1,4 +1,8 @@
 {
+    "subscription_manager_search": "Buscar un canal",
+    "subscription_manager_no_channels": "Todavía no tienes suscripciones.",
+    "subscription_manager_no_matches": "No hay canales que coincidan con tu búsqueda.",
+    "subscription_manager_edit_filter": "Editar filtro",
     "header_notifications": "Notificaciones",
     "preferences_unseen_only_description": "Muestra el botón del ojo para marcar vídeos como vistos en el feed de suscripciones.",
     "header_feed_navigation": "Feeds",

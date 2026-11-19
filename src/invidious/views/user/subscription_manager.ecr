@@ -1,48 +1,47 @@
 <% content_for "header" do %>
 <title><%= I18n.translate(locale, "Subscription manager") %> - Invidious</title>
+<link rel="stylesheet" href="/css/subscriptions-page.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<div class="pure-g h-box">
-    <div class="pure-u-1-3">
-        <h3>
-            <a href="/feed/subscriptions">
-                <%= I18n.translate_count(locale, "generic_subscriptions_count", subscriptions.size, I18n::NumberFormatting::HtmlSpan) %>
-            </a>
-        </h3>
-    </div>
-    <div class="pure-u-1-3">
-        <h3 style="text-align:center">
-            <a href="/feed/history">
-                <%= I18n.translate(locale, "Watch history") %>
-            </a>
-        </h3>
-    </div>
-    <div class="pure-u-1-3">
-        <h3 style="text-align:right">
-            <a href="/data_control?referer=<%= URI.encode_www_form(referer) %>">
-                <%= I18n.translate(locale, "Import/export") %>
-            </a>
-        </h3>
-    </div>
-</div>
+<%
+    csrf_token = HTML.escape(env.get?("csrf_token").try &.as(String) || "")
+    options = [
+        {"videos", Invidious::Database::SubscriptionFilters::VIDEO},
+        {"shorts", Invidious::Database::SubscriptionFilters::SHORT},
+        {"live", Invidious::Database::SubscriptionFilters::LIVE},
+    ]
+%>
 
-<% subscriptions.each do |channel| %>
-    <div class="h-box">
-        <div class="pure-g<% if channel.deleted %> deleted <% end %>">
-            <div class="pure-u-2-5">
-                <h3 style="padding-left:0.5em">
-                    <a href="/channel/<%= channel.id %>"><%= HTML.escape(channel.author) %></a>
-                </h3>
-            </div>
-            <div class="pure-u-2-5">
+<main class="subscriptions-page" aria-labelledby="subscription-manager-title">
+    <div class="subscriptions-heading">
+        <div>
+            <h1 id="subscription-manager-title"><%= I18n.translate(locale, "Subscription manager") %></h1>
+            <p><%= I18n.translate_count(locale, "generic_subscriptions_count", subscriptions.size, I18n::NumberFormatting::Separator) %></p>
+        </div>
+        <div class="subscriptions-links">
+            <a href="/feed/subscriptions"><i class="icon ion-ios-albums" aria-hidden="true"></i> <%= I18n.translate(locale, "Subscriptions") %></a>
+            <a href="/feed/history"><i class="icon ion-ios-time" aria-hidden="true"></i> <%= I18n.translate(locale, "Watch history") %></a>
+            <a href="/data_control?referer=<%= URI.encode_www_form(referer) %>"><i class="icon ion-ios-swap" aria-hidden="true"></i> <%= I18n.translate(locale, "Import/export") %></a>
+        </div>
+    </div>
+
+    <% if subscriptions.empty? %>
+        <p class="subscriptions-empty"><%= I18n.translate(locale, "subscription_manager_no_channels") %></p>
+    <% else %>
+        <div class="subscriptions-search" id="subscription-search-box" hidden>
+            <i class="icon ion-ios-search" aria-hidden="true"></i>
+            <input type="search" id="subscription-search" autocomplete="off"
+                   placeholder="<%= HTML.escape(I18n.translate(locale, "subscription_manager_search")) %>"
+                   aria-label="<%= HTML.escape(I18n.translate(locale, "subscription_manager_search")) %>"
+                   aria-controls="subscription-list">
+        </div>
+        <p id="subscription-no-matches" class="subscriptions-empty" role="status" hidden><%= I18n.translate(locale, "subscription_manager_no_matches") %></p>
+
+        <ul class="subscription-list" id="subscription-list">
+            <% subscriptions.each do |channel| %>
                 <%
                     types = filters[channel.id]?
                     selected = types || (user.preferences.hide_shorts ? "vl" : "vsl")
-                    options = [
-                        {"videos", Invidious::Database::SubscriptionFilters::VIDEO},
-                        {"shorts", Invidious::Database::SubscriptionFilters::SHORT},
-                        {"live", Invidious::Database::SubscriptionFilters::LIVE},
-                    ]
                     summary = if types.nil?
                         I18n.translate(locale, "subscription_filter_inherit")
                     elsif types.empty?
@@ -53,38 +52,49 @@
                         }.join(", ")
                     end
                 %>
-                <details>
-                    <summary><%= summary %></summary>
-                    <form class="pure-form pure-form-stacked" method="post" action="/subscription_ajax?action=save_filter&amp;c=<%= channel.id %>">
-                        <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
-                        <fieldset>
-                            <legend><%= I18n.translate(locale, "subscription_filter_feed_types") %></legend>
-                            <% options.each do |name, code| %>
-                                <label>
-                                    <input type="checkbox" name="filter_<%= name %>" <%= "checked" if selected.includes?(code) %>>
-                                    <%= I18n.translate(locale, "subscription_filter_#{name}") %>
-                                </label>
+                <li class="subscription-card">
+                    <a class="subscription-identity" href="/channel/<%= channel.id %>">
+                        <span class="subscription-avatar" aria-hidden="true">
+                            <%= HTML.escape(channel.author.strip[0, 1].upcase) %>
+                            <% unless channel.deleted %>
+                                <img src="/channel/<%= channel.id %>/avatar" alt="" width="48" height="48" loading="lazy" decoding="async">
                             <% end %>
-                            <button class="pure-button" type="submit" name="filter_mode" value="custom"><%= I18n.translate(locale, "subscription_filter_save") %></button>
-                            <% if types %>
-                                <button class="pure-button" type="submit" name="filter_mode" value="inherit"><%= I18n.translate(locale, "subscription_filter_inherit") %></button>
-                            <% end %>
-                        </fieldset>
-                    </form>
-                </details>
-            </div>
-            <div class="pure-u-1-5" style="text-align:right">
-                <h3 style="padding-right:0.5em">
-                    <form data-onsubmit="return_false" action="/subscription_ajax?action=remove_subscriptions&c=<%= channel.id %>&referer=<%= env.get("current_page") %>" method="post">
-                        <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
-                        <input style="all:unset" type="submit" data-onclick="remove_subscription" data-ucid="<%= channel.id %>" value="<%= I18n.translate(locale, "unsubscribe") %>">
-                    </form>
-                </h3>
-            </div>
-        </div>
+                        </span>
+                        <span>
+                            <strong class="subscription-name"><%= HTML.escape(channel.author) %></strong>
+                            <span class="subscription-status<%= " subscription-status-custom" if types %>"><%= summary %></span>
+                        </span>
+                    </a>
 
-        <% if subscriptions[-1].author != channel.author %>
-            <hr>
-        <% end %>
-    </div>
-<% end %>
+                    <details class="subscription-filter">
+                        <summary><i class="icon ion-ios-options" aria-hidden="true"></i> <%= I18n.translate(locale, "subscription_manager_edit_filter") %><i class="icon ion-ios-arrow-down subscription-chevron" aria-hidden="true"></i></summary>
+                        <form method="post" action="/subscription_ajax?action=save_filter&amp;c=<%= channel.id %>">
+                            <input type="hidden" name="csrf_token" value="<%= csrf_token %>">
+                            <fieldset>
+                                <legend><%= I18n.translate(locale, "subscription_filter_feed_types") %></legend>
+                                <% options.each do |name, code| %>
+                                    <label>
+                                        <input type="checkbox" name="filter_<%= name %>" <%= "checked" if selected.includes?(code) %>>
+                                        <%= I18n.translate(locale, "subscription_filter_#{name}") %>
+                                    </label>
+                                <% end %>
+                                <div class="subscription-filter-actions">
+                                    <button class="subscription-save" type="submit" name="filter_mode" value="custom"><%= I18n.translate(locale, "subscription_filter_save") %></button>
+                                    <% if types %>
+                                        <button type="submit" name="filter_mode" value="inherit"><%= I18n.translate(locale, "subscription_filter_inherit") %></button>
+                                    <% end %>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </details>
+
+                    <form class="subscription-remove" method="post" action="/subscription_ajax?action=remove_subscriptions&amp;c=<%= channel.id %>&amp;referer=%2Fsubscription_manager">
+                        <input type="hidden" name="csrf_token" value="<%= csrf_token %>">
+                        <button type="submit"><%= I18n.translate(locale, "unsubscribe") %></button>
+                    </form>
+                </li>
+            <% end %>
+        </ul>
+        <script defer src="/js/subscription-manager.js?v=<%= ASSET_COMMIT %>"></script>
+    <% end %>
+</main>

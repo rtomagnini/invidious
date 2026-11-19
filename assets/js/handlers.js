@@ -75,9 +75,6 @@
     document.querySelectorAll('[data-onclick="revoke_token"]').forEach(function (el) {
         el.onclick = function () { revoke_token(el); };
     });
-    document.querySelectorAll('[data-onclick="remove_subscription"]').forEach(function (el) {
-        el.onclick = function () { remove_subscription(el); };
-    });
     document.querySelectorAll('[data-onclick="notification_requestPermission"]').forEach(function (el) {
         el.onclick = function () { Notification.requestPermission(); };
     });
@@ -100,26 +97,6 @@
         var url = '/token_ajax?action=revoke_token&redirect=false' +
             '&referer=' + encodeURIComponent(location.href) +
             '&session=' + target.getAttribute('data-session');
-
-        var payload = 'csrf_token=' + target.parentNode.querySelector('input[name="csrf_token"]').value;
-
-        helpers.xhr('POST', url, {payload: payload}, {
-            onNon200: function (xhr) {
-                count.textContent++;
-                row.style.display = '';
-            }
-        });
-    }
-
-    function remove_subscription(target) {
-        var row = target.parentNode.parentNode.parentNode.parentNode.parentNode;
-        row.style.display = 'none';
-        var count = document.getElementById('count');
-        count.textContent--;
-
-        var url = '/subscription_ajax?action=remove_subscriptions&redirect=false' +
-            '&referer=' + encodeURIComponent(location.href) +
-            '&c=' + target.getAttribute('data-ucid');
 
         var payload = 'csrf_token=' + target.parentNode.querySelector('input[name="csrf_token"]').value;
 

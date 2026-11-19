@@ -510,5 +510,13 @@
     "dmca_content": "This video cannot be downloaded on this instance due to a DMCA/copyright infringement letter sent to the instance administrator.",
     "preferences_hide_shorts_label": "Hide YouTube Shorts:",
     "preferences_hide_shorts_description": "Hide confirmed Shorts in subscriptions, search and video suggestions.",
-    "video_details_ai_made": "AI Made video?:"
+    "video_details_ai_made": "AI Made video?:",
+    "subscription_filter_feed_types": "Show in my feed",
+    "subscription_filter_videos": "Regular videos",
+    "subscription_filter_shorts": "Shorts",
+    "subscription_filter_live": "Livestreams and replays",
+    "subscription_filter_inherit": "Use account preferences",
+    "subscription_filter_empty": "No uploads",
+    "subscription_filter_save": "Save filter",
+    "subscription_filter_invalid": "Invalid subscription filter."
 }

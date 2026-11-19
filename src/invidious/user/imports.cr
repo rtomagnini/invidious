@@ -96,6 +96,14 @@ struct Invidious::User
         Invidious::Database::Users.update_subscriptions(user)
       end
 
+      if filters = data["subscription_filters"]?.try &.as_h?
+        filters.each do |ucid, value|
+          types = value.as_s?
+          next unless types && types.matches?(/\Av?s?l?\z/)
+          Invidious::Database::SubscriptionFilters.save(user.email, ucid, types)
+        end
+      end
+
       if data["watch_history"]?
         user.watched += data["watch_history"].as_a.map do |video_id|
           video_id = video_id.as_s

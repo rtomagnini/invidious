@@ -43,6 +43,23 @@ module Invidious::Routes::Subscriptions
       end
     when "remove_subscriptions"
       Invidious::Database::Users.unsubscribe_channel(user, channel_id)
+    when "save_filter"
+      unless user.subscriptions.includes?(channel_id)
+        return Errors.error_template(400, I18n.translate(locale, "subscription_filter_invalid"))
+      end
+
+      if env.params.body["filter_mode"]? == "inherit"
+        Invidious::Database::SubscriptionFilters.reset(user.email, channel_id)
+      else
+        types = String.build do |io|
+          io << Invidious::Database::SubscriptionFilters::VIDEO if env.params.body["filter_videos"]? == "on"
+          io << Invidious::Database::SubscriptionFilters::SHORT if env.params.body["filter_shorts"]? == "on"
+          io << Invidious::Database::SubscriptionFilters::LIVE if env.params.body["filter_live"]? == "on"
+        end
+        Invidious::Database::SubscriptionFilters.save(user.email, channel_id, types)
+      end
+
+      return env.redirect "/subscription_manager"
     else
       return Errors.error_json(400, "Unsupported action #{action}")
     end
@@ -100,6 +117,7 @@ module Invidious::Routes::Subscriptions
       end
     end
 
+    filters = Invidious::Database::SubscriptionFilters.select(user.email)
     templated "user/subscription_manager"
   end
 end

@@ -21,7 +21,7 @@ module Invidious::Database::Channels
     if update_on_conflict
       request += <<-SQL
         ON CONFLICT (id) DO UPDATE
-        SET author = $2, updated = $3, shorts_continuation = $6
+        SET author = $2, updated = $3, shorts_continuation = $6, livestreams_continuation = $7
         SQL
     end
 
@@ -32,14 +32,14 @@ module Invidious::Database::Channels
   #  Update
   # -------------------
 
-  def update_author(id : String, author : String, shorts_continuation : String? = nil)
+  def update_author(id : String, author : String, shorts_continuation : String?, livestreams_continuation : String?)
     request = <<-SQL
       UPDATE channels
-      SET updated = now(), author = $1, deleted = false, shorts_continuation = $3
+      SET updated = now(), author = $1, deleted = false, shorts_continuation = $3, livestreams_continuation = $4
       WHERE id = $2
       SQL
 
-    PG_DB.exec(request, author, id, shorts_continuation)
+    PG_DB.exec(request, author, id, shorts_continuation, livestreams_continuation)
   end
 
   def update_subscription_time(id : String)
@@ -107,16 +107,17 @@ module Invidious::Database::ChannelVideos
 
     request = <<-SQL
       INSERT INTO channel_videos
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       ON CONFLICT (id) DO UPDATE
       SET title = $2, published = $3, updated = $4, ucid = $5,
           author = $6, length_seconds = $7, live_now = $8, #{last_items},
-          is_short = COALESCE($11, channel_videos.is_short)
+          is_short = COALESCE($11, channel_videos.is_short),
+          is_livestream = COALESCE(channel_videos.is_livestream OR $12, $12, channel_videos.is_livestream)
       RETURNING (xmax=0) AS was_insert
       SQL
 
     was_insert = PG_DB.query_one(request, *video.to_tuple, as: Bool)
-    if !was_insert && !video.is_short.nil?
+    if !was_insert && (!video.is_short.nil? || !video.is_livestream.nil?)
       Invidious::Database::Users.feed_needs_update(video.ucid)
     end
     was_insert
@@ -132,6 +133,34 @@ module Invidious::Database::ChannelVideos
       RETURNING id
       SQL
     Invidious::Database::Users.feed_needs_update(ucid) unless changed.empty?
+  end
+
+  def classify_livestreams(ucid : String, ids : Array(String))
+    return if ids.empty?
+
+    result = PG_DB.exec(<<-SQL, ucid, ids)
+      UPDATE channel_videos SET is_livestream = TRUE
+      WHERE ucid = $1 AND id = ANY($2) AND is_livestream IS NOT TRUE
+      SQL
+    Invidious::Database::Users.feed_needs_update(ucid) if result.rows_affected > 0
+  end
+
+  def insert_livestream_from_tab(video : ChannelVideo) : Bool
+    result = PG_DB.exec(<<-SQL, *video.to_tuple)
+      INSERT INTO channel_videos
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      ON CONFLICT (id) DO NOTHING
+      SQL
+    result.rows_affected > 0
+  end
+
+  def update_livestream_status(ucid : String, id : String, live_now : Bool, scheduled_at : Time?)
+    result = PG_DB.exec(<<-SQL, ucid, id, live_now, scheduled_at)
+      UPDATE channel_videos SET live_now = $3, premiere_timestamp = $4
+      WHERE ucid = $1 AND id = $2
+        AND (live_now IS DISTINCT FROM $3 OR premiere_timestamp IS DISTINCT FROM $4)
+      SQL
+    Invidious::Database::Users.feed_needs_update(ucid) if result.rows_affected > 0
   end
 
   # -------------------

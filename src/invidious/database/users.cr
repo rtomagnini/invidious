@@ -112,7 +112,11 @@ module Invidious::Database::Users
       WHERE email = $2
       SQL
 
-    PG_DB.exec(request, ucid, user.email)
+    PG_DB.transaction do |transaction|
+      connection = transaction.connection
+      connection.exec(request, ucid, user.email)
+      connection.exec("DELETE FROM subscription_filters WHERE email = $1 AND ucid = $2", user.email, ucid)
+    end
   end
 
   # -------------------
@@ -120,13 +124,13 @@ module Invidious::Database::Users
   # -------------------
 
   def add_multiple_notifications(channel_id : String, video_ids : Array(String))
+    filter = Invidious::Database::SubscriptionFilters.allowed_sql(
+      "users.email", "COALESCE((users.preferences::jsonb ->> 'hide_shorts')::boolean, $3)"
+    )
     request = <<-SQL
       UPDATE users
       SET notifications = array_cat(notifications, ARRAY(
-        SELECT candidate.video_id FROM unnest($1::text[]) AS candidate(video_id)
-        WHERE NOT COALESCE((preferences::jsonb ->> 'hide_shorts')::boolean, $3)
-          OR NOT EXISTS (SELECT 1 FROM channel_videos cv
-            WHERE cv.id = candidate.video_id AND cv.is_short IS TRUE)
+        SELECT cv.id FROM channel_videos cv WHERE cv.id = ANY($1::text[]) AND #{filter}
       )),
           feed_needs_update = true
       WHERE $2 = ANY(subscriptions)

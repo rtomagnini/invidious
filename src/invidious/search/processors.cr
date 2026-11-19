@@ -37,20 +37,13 @@ module Invidious::Search::Processors
   # Search inside of user subscriptions
   def subscriptions(query : Query, user : Invidious::User) : Array(ChannelVideo)
     view_name = "subscriptions_#{sha256(user.email)}"
-    shorts_filter = user.preferences.hide_shorts ? "is_short IS NOT TRUE" : "TRUE"
+    filter = Invidious::Database::SubscriptionFilters.allowed_sql("$3", "$4")
 
-    return PG_DB.query_all(<<-SQL,
-      SELECT id,title,published,updated,ucid,author,length_seconds,live_now,premiere_timestamp,views,is_short
-      FROM (
-        SELECT *,
-        to_tsvector(#{view_name}.title) ||
-        to_tsvector(#{view_name}.author)
-        as document
-        FROM #{view_name}
-      ) v_search WHERE #{shorts_filter} AND v_search.document @@ plainto_tsquery($1) LIMIT 20 OFFSET $2;
+    return PG_DB.query_all(<<-SQL, query.text, (query.page - 1) * 20, user.email, user.preferences.hide_shorts, as: ChannelVideo)
+      SELECT cv.* FROM #{view_name} cv
+      WHERE #{filter}
+        AND (to_tsvector(cv.title) || to_tsvector(cv.author)) @@ plainto_tsquery($1)
+      LIMIT 20 OFFSET $2
       SQL
-      query.text, (query.page - 1) * 20,
-      as: ChannelVideo
-    )
   end
 end

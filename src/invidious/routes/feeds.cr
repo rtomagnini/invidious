@@ -445,6 +445,7 @@ module Invidious::Routes::Feeds
           premiere_timestamp: video.premiere_timestamp,
           views:              video.views,
           is_short:           Invidious::Channels::Shorts.classify_video(id, author, video.ucid),
+          is_livestream:      Invidious::Channels::Livestreams.classify_video(id, author, video.ucid),
         })
 
         was_insert = Invidious::Database::ChannelVideos.insert(video, with_premiere_timestamp: true)

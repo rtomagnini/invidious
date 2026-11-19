@@ -8,6 +8,7 @@ struct InvidiousChannel
   property subscribed : Time?
   # nil starts the historical scan; an empty string means it is complete.
   property shorts_continuation : String? = nil
+  property livestreams_continuation : String? = nil
 end
 
 struct ChannelVideo
@@ -24,6 +25,7 @@ struct ChannelVideo
   property premiere_timestamp : Time? = nil
   property views : Int64? = nil
   property is_short : Bool? = nil
+  property is_livestream : Bool? = nil
 
   def to_json(locale, json : JSON::Builder)
     json.object do
@@ -199,7 +201,8 @@ module Invidious::Channels::Channels
       updated:             Time.utc,
       deleted:             false,
       subscribed:          nil,
-      shorts_continuation: nil,
+      shorts_continuation:      nil,
+      livestreams_continuation: nil,
     })
 
     LOGGER.trace("fetch_channel: #{ucid} : Downloading channel videos page")
@@ -207,11 +210,15 @@ module Invidious::Channels::Channels
 
     short_ids, shorts_continuation = Invidious::Channels::Shorts.refresh(channel)
     channel.shorts_continuation = shorts_continuation
+    streams, channel.livestreams_continuation = Invidious::Channels::Livestreams.refresh(channel)
+    rss_ids = Set(String).new
     Invidious::Database::ChannelVideos.classify(ucid, videos.select(SearchVideo).reject { |v| v.is_short == true }.map(&.id), false)
 
     LOGGER.trace("fetch_channel: #{ucid} : Extracting videos from channel RSS feed")
     rss.xpath_nodes("//default:feed/default:entry", namespaces).each do |entry|
       video_id = entry.xpath_node("yt:videoId", namespaces).not_nil!.content
+      rss_ids.add(video_id)
+      stream = streams[video_id]?
       title = entry.xpath_node("default:title", namespaces).not_nil!.content
 
       published = Time.parse_rfc3339(
@@ -228,9 +235,7 @@ module Invidious::Channels::Channels
         .xpath_node("media:group/media:community/media:statistics", namespaces)
         .try &.["views"]?.try &.to_i64? || 0_i64
 
-      channel_video = videos
-        .select(SearchVideo)
-        .select(&.id.== video_id)[0]?
+      channel_video = stream || videos.select(SearchVideo).find(&.id.== video_id)
 
       length_seconds = channel_video.try &.length_seconds
       length_seconds ||= 0
@@ -239,6 +244,7 @@ module Invidious::Channels::Channels
       live_now ||= false
 
       premiere_timestamp = channel_video.try &.premiere_timestamp
+      premiere_timestamp = nil if stream && premiere_timestamp.try(&.<=(Time.utc))
 
       video = ChannelVideo.new({
         id:                 video_id,
@@ -252,13 +258,12 @@ module Invidious::Channels::Channels
         premiere_timestamp: premiere_timestamp,
         views:              views,
         is_short:           short_ids.includes?(video_id) ? true : channel_video.try(&.is_short),
+        is_livestream:      stream ? true : nil,
       })
 
       LOGGER.trace("fetch_channel: #{ucid} : video #{video_id} : Updating or inserting video")
 
-      # We don't include the 'premiere_timestamp' here because channel pages don't include them,
-      # meaning the above timestamp is always null
-      was_insert = Invidious::Database::ChannelVideos.insert(video)
+      was_insert = Invidious::Database::ChannelVideos.insert(video, with_premiere_timestamp: !stream.nil? || !premiere_timestamp.nil?)
 
       if was_insert
         LOGGER.trace("fetch_channel: #{ucid} : video #{video_id} : Inserted, updating subscriptions")
@@ -267,6 +272,8 @@ module Invidious::Channels::Channels
         LOGGER.trace("fetch_channel: #{ucid} : video #{video_id} : Updated")
       end
     end
+
+    Invidious::Channels::Livestreams.add_missing(channel, streams, rss_ids)
 
     if pull_all_videos
       loop do
@@ -288,6 +295,7 @@ module Invidious::Channels::Channels
             premiere_timestamp: video.premiere_timestamp,
             views:              video.views,
             is_short:           video.is_short,
+            is_livestream:      nil,
           })
 
           # We are notified of Red videos elsewhere (PubSub), which includes a correct published date,

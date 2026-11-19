@@ -737,8 +737,17 @@ private module Parsers
                 .try { |item| decode_date(item.dig("text", "content").as_s) }
             end
             if premiere_timestamp.nil?
-              premiere_timestamp = metadata_parts.try &.find { |item| item["icon"]?.nil? && item.dig?("text", "content").try &.as_s.includes?("Premieres") }
-                .try { |item| decode_date(item.dig("text", "content").as_s) }
+              event = metadata_parts.try &.find do |item|
+                text = item.dig?("text", "content").try &.as_s
+                item["icon"]?.nil? && text && (text.starts_with?("Premieres ") || text.starts_with?("Scheduled for "))
+              end
+              if text = event.try &.dig("text", "content").as_s
+                begin
+                  premiere_timestamp = decode_date(text.lchop("Scheduled for "))
+                rescue
+                  # A missing schedule must not discard the video.
+                end
+              end
             end
 
             break if !view_count_text.nil? && !published.nil? && !premiere_timestamp.nil?
@@ -749,7 +758,8 @@ private module Parsers
 
         length = thumbnail_view_model.dig("overlays", 0, "thumbnailBottomOverlayViewModel", "badges", 0, "thumbnailBadgeViewModel", "text").try &.as_s
 
-        length_seconds = decode_length_seconds(length) if length
+        live_now = length.try(&.upcase) == "LIVE"
+        length_seconds = decode_length_seconds(length) if length && !live_now
 
         return SearchVideo.new({
           title:              title,
@@ -763,7 +773,7 @@ private module Parsers
           premiere_timestamp: premiere_timestamp,
           author_verified:    false,
           author_thumbnail:   nil,
-          badges:             VideoBadges::None,
+          badges:             live_now ? VideoBadges::LiveNow : VideoBadges::None,
           is_short:           Invidious::Videos::Shorts.from_renderer(item_contents),
         })
         # If it's a playlist, it's content_type would be "LOCKUP_CONTENT_TYPE_PLAYLIST"

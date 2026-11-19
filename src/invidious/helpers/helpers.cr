@@ -66,7 +66,7 @@ module Invidious::Helpers
     connection_channel.send({true, connection})
 
     locale = env.get("preferences").as(Preferences).locale
-    hide_shorts = env.get("preferences").as(Preferences).hide_shorts
+    user = env.get("user").as(User)
 
     since = env.params.query["since"]?.try &.to_i?
     id = 0
@@ -108,7 +108,7 @@ module Invidious::Helpers
             case topic
             when .match(/UC[A-Za-z0-9_-]{22}/)
               Invidious::Database::ChannelVideos.select_notfications(topic, since_unix).each do |video|
-                next if hide_shorts && video.is_short == true
+                next unless Invidious::Database::SubscriptionFilters.allows_video?(user, video.id)
                 response = JSON.parse(video.to_json(locale))
 
                 env.response.puts "id: #{id}"
@@ -140,9 +140,7 @@ module Invidious::Helpers
             next
           end
 
-          if hide_shorts && Invidious::Database::ChannelVideos.select([video_id]).first?.try(&.is_short) == true
-            next
-          end
+          next unless Invidious::Database::SubscriptionFilters.allows_video?(user, video_id)
 
           video = get_video(video_id)
           video.published = Time.unix(published)

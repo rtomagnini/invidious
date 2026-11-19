@@ -9,9 +9,9 @@ module Invidious::Database
   # dependencies between different parts of the software.
   def check_integrity(cfg)
     return if !cfg.check_tables
-    shorts_schema_missing = !PG_DB.query_one(<<-SQL, as: Bool)
+    feed_schema_missing = !PG_DB.query_one(<<-SQL, as: Bool)
       SELECT EXISTS (SELECT 1 FROM information_schema.columns
-        WHERE table_schema = 'public' AND table_name = 'channel_videos' AND column_name = 'is_short')
+        WHERE table_schema = 'public' AND table_name = 'channel_videos' AND column_name = 'is_livestream')
       SQL
     Invidious::Database.check_enum("privacy", PlaylistPrivacy)
 
@@ -22,9 +22,10 @@ module Invidious::Database
     Invidious::Database.check_table("nonces", Nonce)
     Invidious::Database.check_table("session_ids", SessionId)
     Invidious::Database.check_table("users", User)
+    Invidious::Database.check_table("subscription_filters")
     Invidious::Database.check_table("videos", Video)
 
-    PG_DB.exec("UPDATE users SET feed_needs_update = true") if shorts_schema_missing
+    PG_DB.exec("UPDATE users SET feed_needs_update = true") if feed_schema_missing
 
     if cfg.cache_annotations
       Invidious::Database.check_table("annotations", Annotation)

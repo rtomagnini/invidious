@@ -525,5 +525,13 @@
     "comments_youtube_disabled_text": "Los comentarios de YouTube están desactivados en este video",
     "comments_invidious_disabled_text": "Los comentarios están ocultos según las preferencias del usuario",
     "preferences_hide_shorts_label": "Ocultar Shorts de YouTube:",
-    "preferences_hide_shorts_description": "Oculta los Shorts identificados en suscripciones, búsquedas y sugerencias de videos."
+    "preferences_hide_shorts_description": "Oculta los Shorts identificados en suscripciones, búsquedas y sugerencias de videos.",
+    "subscription_filter_feed_types": "Mostrar en mi feed",
+    "subscription_filter_videos": "Vídeos normales",
+    "subscription_filter_shorts": "Shorts",
+    "subscription_filter_live": "Directos y grabaciones",
+    "subscription_filter_inherit": "Usar preferencias de la cuenta",
+    "subscription_filter_empty": "Ninguna publicación",
+    "subscription_filter_save": "Guardar filtro",
+    "subscription_filter_invalid": "El filtro de suscripción no es válido."
 }

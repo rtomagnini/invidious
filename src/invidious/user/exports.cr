@@ -44,6 +44,7 @@ struct Invidious::User
       getter subscriptions : Array(String)
       getter watch_history : Array(String)
       getter preferences : Preferences
+      getter subscription_filters : Hash(String, String)
       getter playlists : Array(Playlist)
 
       struct Playlist
@@ -68,6 +69,7 @@ struct Invidious::User
         @subscriptions = user.subscriptions
         @watch_history = user.watched
         @preferences = user.preferences
+        @subscription_filters = ::Invidious::Database::SubscriptionFilters.select(user.email)
         @playlists = ::Invidious::Database::Playlists.select_like_iv(user.email)
           .map { |playlist| Playlist.new(playlist) }
       end

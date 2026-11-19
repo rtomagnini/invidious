@@ -81,10 +81,14 @@ module Invidious::Channel::Tabs
   # -------------------
 
   def get_livestreams(channel : AboutChannel, *, continuation : String? = nil, sort_by = "newest")
-    continuation ||= make_initial_livestreams_ctoken(channel.ucid, sort_by)
+    return get_livestreams(channel.author, channel.ucid, continuation: continuation, sort_by: sort_by)
+  end
+
+  def get_livestreams(author : String, ucid : String, *, continuation : String? = nil, sort_by = "newest")
+    continuation ||= make_initial_livestreams_ctoken(ucid, sort_by)
     initial_data = YoutubeAPI.browse(continuation: continuation)
 
-    return extract_items(initial_data, channel.author, channel.ucid)
+    return extract_items(initial_data, author, ucid)
   end
 
   def get_60_livestreams(channel : AboutChannel, *, continuation : String? = nil, sort_by = "newest")

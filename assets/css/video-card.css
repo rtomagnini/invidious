@@ -85,6 +85,8 @@
   font-variant-numeric: tabular-nums;
 }
 
+.video-card-playlist { background: #3654b0; }
+
 .video-card-live { background: #a52546; }
 .video-card-scheduled { background: #f5d688; color: #382500; }
 

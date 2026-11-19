@@ -1,0 +1,60 @@
+<%
+    header_user = env.get?("user").try &.as(Invidious::User)
+    theme_label = HTML.escape(I18n.translate(locale, "toggle_theme"))
+    preferences_label = HTML.escape(I18n.translate(locale, "Preferences"))
+    notifications_label = HTML.escape(I18n.translate(locale, "header_notifications"))
+%>
+
+<header class="site-header h-box">
+    <div class="site-header-bar">
+        <a href="/" class="site-brand">
+            <span class="site-brand-mark" aria-hidden="true"><i class="icon ion-ios-play"></i></span>
+            <span>Invidious</span>
+        </a>
+
+        <%= rendered "components/feed_menu" %>
+
+        <% if navbar_search %>
+            <div class="site-search searchbar">
+                <% autofocus = false %><%= rendered "components/search_box" %>
+            </div>
+        <% end %>
+
+        <div class="site-header-actions">
+            <a id="toggle_theme" href="/toggle_theme?referer=<%= env.get?("current_page") %>" class="site-icon-button" title="<%= theme_label %>" aria-label="<%= theme_label %>">
+                <i class="icon <%= dark_mode == "dark" ? "ion-ios-sunny" : "ion-ios-moon" %>" aria-hidden="true"></i>
+            </a>
+
+            <% if header_user && CONFIG.enable_user_notifications %>
+                <% notification_count = header_user.notifications.size %>
+                <a id="notification_ticker" href="/feed/subscriptions" class="site-icon-button site-notifications" title="<%= notifications_label %>">
+                    <span class="site-visually-hidden"><%= notifications_label %></span>
+                    <i class="icon <%= notification_count > 0 ? "ion-ios-notifications" : "ion-ios-notifications-outline" %>" aria-hidden="true"></i>
+                    <span id="notification_count" class="site-notification-badge" data-count="<%= notification_count %>" <%= "hidden" if notification_count == 0 %>><%= notification_count > 99 ? "99+" : notification_count.to_s %></span>
+                </a>
+            <% end %>
+
+            <a href="/preferences?referer=<%= env.get?("current_page") %>" class="site-icon-button" title="<%= preferences_label %>" aria-label="<%= preferences_label %>">
+                <i class="icon ion-ios-cog" aria-hidden="true"></i>
+            </a>
+
+            <% if header_user %>
+                <div class="site-account">
+                    <% if preferences.show_nick %>
+                        <span id="user_name" title="<%= HTML.escape(header_user.email) %>"><%= HTML.escape(header_user.email) %></span>
+                    <% end %>
+                    <form action="/signout?referer=<%= env.get?("current_page") %>" method="post">
+                        <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
+                        <% logout_label = HTML.escape(I18n.translate(locale, "Log out")) %>
+                        <button type="submit" class="site-icon-button" title="<%= logout_label %>" aria-label="<%= logout_label %>">
+                            <i class="icon ion-ios-log-out" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                </div>
+            <% elsif CONFIG.login_enabled %>
+                <a href="/login?referer=<%= env.get?("current_page") %>" class="site-login"><%= I18n.translate(locale, "Log in") %></a>
+            <% end %>
+        </div>
+    </div>
+
+</header>

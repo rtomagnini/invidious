@@ -1,4 +1,7 @@
 {
+    "header_notifications": "Notificações",
+    "preferences_unseen_only_description": "Mostra o botão de olho para marcar vídeos como assistidos no feed de inscrições.",
+    "header_feed_navigation": "Feeds",
     "LIVE": "AO VIVO",
     "Shared `x` ago": "Publicado há `x`",
     "Unsubscribe": "Cancelar inscrição",

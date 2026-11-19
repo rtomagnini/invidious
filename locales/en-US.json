@@ -1,4 +1,7 @@
 {
+    "header_notifications": "Notifications",
+    "preferences_unseen_only_description": "Shows the eye button to mark videos as watched in your subscriptions feed.",
+    "header_feed_navigation": "Feeds",
     "Add to playlist": "Add to playlist",
     "Add to playlist: ": "Add to playlist: ",
     "Answer": "Answer",

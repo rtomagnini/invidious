@@ -132,22 +132,6 @@ body a.channel-owner {
   color: rgb(255, 0, 0);
 }
 
-.feed-menu {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.feed-menu-item {
-  text-align: center;
-}
-
-@media screen and (max-width: 640px) {
-  .feed-menu-item {
-    flex: 0 0 40%;
-  }
-}
-
 div {
   overflow-wrap: break-word;
   word-wrap: break-word;
@@ -270,30 +254,6 @@ div.thumbnail > .bottom-right-overlay {
  * Navbar
  */
 
-.navbar {
-  margin: 1em 0;
-  display: flex; /* this is also defined in framework, but in case of future changes */
-  align-items: center;
-  justify-content: space-between;
-}
-
-.navbar > div {
-  flex: 1;
-}
-
-.searchbar {
-  flex-grow: 2; /* take double the space of the other items */
-}
-
-.navbar a {
-  padding: 0; /* this way it will stay aligned with content under */
-}
-
-.navbar .index-link {
-  font-weight: bold;
-  display: inline;
-}
-
 .searchbar .pure-form {
   display: flex;
 }
@@ -343,22 +303,6 @@ input[type="search"]::-webkit-search-cancel-button {
   color: rgb(0, 182, 240);
 }
 
-.user-field {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.user-field div {
-  width: auto;
-}
-
-.user-field div:not(:last-child) {
-  margin-right: 1em;
-}
-
-
 /*
  * Responsive rules
  */
@@ -374,20 +318,6 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 @media screen and (max-width: 767px) {
-  .navbar {
-    flex-direction: column;
-  }
-
-  .navbar > div {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 25px;
-  }
-
-  .navbar > .searchbar > form {
-    width: 75%;
-  }
-
   h1 {
     font-size: 1.25em;
     margin: 0.42em 0;
@@ -398,19 +328,10 @@ input[type="search"]::-webkit-search-cancel-button {
   .title.flexible > .flex-right { margin: 0.75em 0; justify-content: flex-start; }
 
   /* Space out buttons to make them easier to tap */
-  .user-field { font-size: 125%; }
-  .user-field > :not(:last-child) { margin-right: 1.75em; }
-
   .icon-buttons { font-size: 125%; }
   .icon-buttons > :not(:last-child) { margin-right: 0.75em; }
 }
 
-@media screen and (max-width: 320px) {
-  .navbar > .searchbar > form {
-    width: 100%;
-    margin: 0 1em;
-  }
-}
 
 
 /*
@@ -476,38 +397,6 @@ p.video-data   { margin: 0; font-weight: bold; font-size: 80%; }
   display: inline-block;
 }
 
-
-/*
- * Footer
- */
-
-footer {
-  margin-top: auto;
-  padding: 1.5em 0;
-  text-align: center;
-  max-height: 30vh;
-}
-
-.light-theme footer {
-  color: #7c7c7c;
-}
-
-.dark-theme footer {
-  color: #adadad;
-}
-
-.light-theme footer a {
-  color: #7c7c7c !important;
-}
-
-.dark-theme footer a {
-  color: #adadad !important;
-}
-
-footer span {
-  margin: 4px 0;
-  display: block;
-}
 
 /* keyframes */
 
@@ -613,14 +502,6 @@ span > select {
   .no-theme .pure-u-lg-1-5 > .h-box > a[href^="/watch?"],
   .no-theme .playlist-restricted > ol > li > a {
     color: #303030;
-  }
-
-  .no-theme footer {
-    color: #7c7c7c;
-  }
-
-  .no-theme footer a {
-    color: #7c7c7c !important;
   }
 
   .light-theme .pure-menu-heading {
@@ -762,14 +643,6 @@ body.dark-theme {
   .no-theme .searchbar input {
     background-color: inherit;
     color: inherit;
-  }
-
-  .no-theme footer {
-    color: #adadad;
-  }
-
-  .no-theme footer a {
-    color: #adadad !important;
   }
 
   .no-theme .error-card {

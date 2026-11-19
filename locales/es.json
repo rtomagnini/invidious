@@ -1,4 +1,7 @@
 {
+    "header_notifications": "Notificaciones",
+    "preferences_unseen_only_description": "Muestra el botón del ojo para marcar vídeos como vistos en el feed de suscripciones.",
+    "header_feed_navigation": "Feeds",
     "LIVE": "DIRECTO",
     "Shared `x` ago": "Compartido hace `x`",
     "Unsubscribe": "Desuscribirse",

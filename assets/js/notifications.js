@@ -75,16 +75,15 @@ function create_notification_stream(subscriptions) {
 }
 
 function update_ticker_count() {
-    var notification_ticker = document.getElementById('notification_ticker');
+    var ticker = document.getElementById('notification_ticker');
+    if (!ticker) return;
 
-    const notification_count = helpers.storage.get(STORAGE_KEY_NOTIF_COUNT) || 0;
-    if (notification_count > 0) {
-        notification_ticker.innerHTML =
-            '<span id="notification_count">' + notification_count + '</span> <i class="icon ion-ios-notifications"></i>';
-    } else {
-        notification_ticker.innerHTML =
-            '<i class="icon ion-ios-notifications-outline"></i>';
-    }
+    var badge = document.getElementById('notification_count');
+    var count = helpers.storage.get(STORAGE_KEY_NOTIF_COUNT) || 0;
+    badge.textContent = count > 99 ? '99+' : count;
+    badge.hidden = count === 0;
+    ticker.querySelector('.icon').className = count > 0 ?
+        'icon ion-ios-notifications' : 'icon ion-ios-notifications-outline';
 }
 
 function start_stream_if_needed() {
@@ -117,7 +116,7 @@ addEventListener('storage', function (e) {
 
 addEventListener('load', function () {
     var notification_count_el = document.getElementById('notification_count');
-    var notification_count = notification_count_el ? parseInt(notification_count_el.textContent) : 0;
+    var notification_count = notification_count_el ? Number(notification_count_el.dataset.count) : 0;
     helpers.storage.set(STORAGE_KEY_NOTIF_COUNT, notification_count);
 
     if (helpers.storage.get(STORAGE_KEY_STREAM))

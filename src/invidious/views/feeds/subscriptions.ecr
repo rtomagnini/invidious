@@ -3,49 +3,26 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="/feed/private?token=<%= token %>" />
 <% end %>
 
-<%= rendered "components/feed_menu" %>
-
-<div class="pure-g h-box">
-    <div class="pure-u-1-3">
-        <h3>
-            <a href="/subscription_manager"><%= I18n.translate(locale, "Manage subscriptions") %></a>
-        </h3>
-    </div>
-    <div class="pure-u-1-3">
-        <h3 style="text-align:center">
-            <a href="/feed/history"><%= I18n.translate(locale, "Watch history") %></a>
-        </h3>
-    </div>
-    <div class="pure-u-1-3">
-        <h3 style="text-align:right">
-            <a href="/feed/private?token=<%= token %>"><i class="icon ion-logo-rss"></i></a>
-        </h3>
+<div class="subscription-toolbar h-box">
+    <h1><%= I18n.translate(locale, "Subscriptions") %></h1>
+    <div class="subscription-toolbar-actions">
+        <a href="/subscription_manager"><i class="icon ion-ios-list" aria-hidden="true"></i> <%= I18n.translate(locale, "Manage subscriptions") %></a>
+        <a href="/feed/history"><i class="icon ion-ios-time" aria-hidden="true"></i> <%= I18n.translate(locale, "Watch history") %></a>
+        <a href="/feed/private?token=<%= token %>" title="<%= I18n.translate(locale, "generic_button_rss") %>" aria-label="<%= I18n.translate(locale, "generic_button_rss") %>">
+            <i class="icon ion-logo-rss" aria-hidden="true"></i>
+        </a>
     </div>
 </div>
 
-<% if CONFIG.enable_user_notifications %>
-
-<center>
-    <%= I18n.translate_count(locale, "subscriptions_unseen_notifs_count", notifications.size) %>
-</center>
-
-<% if !notifications.empty? %>
-    <div class="h-box">
-        <hr>
-    </div>
+<% if CONFIG.enable_user_notifications && !notifications.empty? %>
+    <section aria-label="<%= HTML.escape(I18n.translate(locale, "header_notifications")) %>" class="subscription-notifications">
+        <div class="pure-g">
+            <% notifications.each do |item| %>
+                <%= rendered "components/item" %>
+            <% end %>
+        </div>
+    </section>
 <% end %>
-
-<div class="pure-g">
-<% notifications.each do |item| %>
-    <%= rendered "components/item" %>
-<% end %>
-</div>
-
-<% end %>
-
-<div class="h-box">
-    <hr>
-</div>
 
 <script id="watched_data" type="application/json">
 <%=

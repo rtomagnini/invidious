@@ -158,7 +158,7 @@ class Config
   property enable_user_notifications : Bool = true
 
   # URL to the modified source code to be easily AGPL compliant
-  # Will display in the footer, next to the main source code link
+  # Base URL for the source link on the version in the footer
   property modified_source_code_url : String? = nil
 
   # Connect to YouTube over 'ipv6', 'ipv4'. Will sometimes resolve fix issues with rate-limiting (see https://github.com/ytdl-org/youtube-dl/issues/21729)

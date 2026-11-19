@@ -13,13 +13,10 @@
 <% content_for "header" do %>
 <link rel="alternate" href="<%= youtube_url %>">
 <title><%= author %> - Invidious</title>
+<link rel="stylesheet" href="/css/channel-page.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
 <%= rendered "components/channel_info" %>
-
-<div class="h-box">
-    <hr>
-</div>
 
 <% if error_message %>
     <div class="h-box">

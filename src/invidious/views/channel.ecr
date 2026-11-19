@@ -30,16 +30,16 @@
 
 <% content_for "header" do %>
 <%- if selected_tab.videos? -%>
-<meta name="description" content="<%= channel.description %>">
+<meta name="description" content="<%= HTML.escape(channel.description) %>">
 <meta property="og:site_name" content="Invidious">
 <meta property="og:url" content="<%= HOST_URL %>/channel/<%= ucid %>">
 <meta property="og:title" content="<%= author %>">
 <meta property="og:image" content="<%= HOST_URL %>/ggpht<%= channel_profile_pic %>">
-<meta property="og:description" content="<%= channel.description %>">
+<meta property="og:description" content="<%= HTML.escape(channel.description) %>">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:url" content="<%= HOST_URL %>/channel/<%= ucid %>">
 <meta name="twitter:title" content="<%= author %>">
-<meta name="twitter:description" content="<%= channel.description %>">
+<meta name="twitter:description" content="<%= HTML.escape(channel.description) %>">
 <meta name="twitter:image" content="<%= HOST_URL %>/ggpht<%= channel_profile_pic %>">
 <link rel="alternate" type="application/rss+xml" title="RSS" href="/feed/channel/<%= ucid %>" />
 <%- end -%>
@@ -48,13 +48,10 @@
 
 <link rel="alternate" href="<%= youtube_url %>">
 <title><%= author %> - Invidious</title>
+<link rel="stylesheet" href="/css/channel-page.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
 <%= rendered "components/channel_info" %>
-
-<div class="h-box">
-    <hr>
-</div>
 
 
 <%= rendered "components/items_paginated" %>

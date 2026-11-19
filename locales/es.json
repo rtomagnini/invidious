@@ -1,4 +1,6 @@
 {
+    "channel_sections": "Secciones del canal",
+    "channel_sort_by": "Ordenar contenido del canal",
     "subscription_manager_search": "Buscar un canal",
     "subscription_manager_no_channels": "Todavía no tienes suscripciones.",
     "subscription_manager_no_matches": "No hay canales que coincidan con tu búsqueda.",

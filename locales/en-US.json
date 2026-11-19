@@ -1,4 +1,8 @@
 {
+    "watch_tools": "More actions",
+    "watch_video_details": "Video details",
+    "watch_recommendations": "Recommended videos",
+    "watch_comments": "Comments",
     "account_captcha_clock": "CAPTCHA clock",
     "account_confirm_password": "Confirm new password",
     "account_delete_description": "This permanently deletes your account and its data.",

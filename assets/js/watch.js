@@ -90,7 +90,7 @@ function get_playlist(plid) {
         },
         onNon200: function (xhr) {
             playlist.innerHTML = '';
-            document.getElementById('continue').style.display = '';
+            if (continue_button) continue_button.closest('label').hidden = false;
         },
         onError: function (xhr) {
             playlist.innerHTML = spinnerHTMLwithHR;

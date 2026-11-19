@@ -1,4 +1,7 @@
 {
+    "video_card_scheduled": "Programado",
+    "video_card_scheduled_live": "Transmissão programada",
+    "video_card_mark_watched": "Marcar como assistido",
     "playlist_library_created": "Playlists criadas",
     "playlist_library_saved": "Playlists salvas",
     "playlist_library_empty_created": "Crie uma playlist para organizar seus vídeos.",

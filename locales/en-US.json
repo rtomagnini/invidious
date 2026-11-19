@@ -1,4 +1,7 @@
 {
+    "video_card_scheduled": "Scheduled",
+    "video_card_scheduled_live": "Scheduled livestream",
+    "video_card_mark_watched": "Mark as watched",
     "playlist_library_created": "Created playlists",
     "playlist_library_saved": "Saved playlists",
     "playlist_library_empty_created": "Create a playlist to organize your videos.",

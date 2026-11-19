@@ -31,6 +31,9 @@
 <title><%= title %> - Invidious</title>
 
 <link rel="stylesheet" href="/css/watch-page.css?v=<%= ASSET_COMMIT %>">
+<% if plid.try &.starts_with?("RD") %>
+    <link rel="stylesheet" href="/css/mix-page.css?v=<%= ASSET_COMMIT %>">
+<% end %>
 <% end %>
 
 <script id="video_data" type="application/json">

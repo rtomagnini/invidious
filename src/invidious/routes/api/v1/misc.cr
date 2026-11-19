@@ -120,12 +120,12 @@ module Invidious::Routes::API::V1::Misc
     begin
       mix = fetch_mix(rdid, continuation, locale: locale)
 
-      if !rdid.ends_with? continuation
-        mix = fetch_mix(rdid, mix.videos[1].id)
-        index = mix.videos.index(mix.videos.select { |video| video.id == continuation }[0]?)
+      if !rdid.ends_with?(continuation) && (following = mix.videos[1]?)
+        mix = fetch_mix(rdid, following.id)
+        if index = mix.videos.index { |video| video.id == continuation }
+          mix.videos = mix.videos[index..]
+        end
       end
-
-      mix.videos = mix.videos[index..-1]
     rescue ex
       return Errors.error_json(500, ex)
     end
@@ -160,13 +160,18 @@ module Invidious::Routes::API::V1::Misc
     end
 
     if format == "html"
-      response = JSON.parse(response)
-      playlist_html = template_mix(response, listen)
-      next_video = response["videos"].as_a.select { |video| !video["author"].as_s.empty? }[0]?.try &.["videoId"]
+      preferences = env.get("preferences").as(Preferences)
+      queue_html = template_mix_queue(mix, continuation, locale, listen, preferences.thin_mode, scrollable: true)
+      mix_url = "/mix?list=#{URI.encode_www_form(mix.id)}&amp;continuation=#{URI.encode_www_form(continuation)}"
+      playlist_html = %(<h2 class="mix-queue-heading"><a href="#{mix_url}">#{HTML.escape(mix.title)}</a></h2>) + queue_html
+      current_index = mix.videos.index { |video| video.id == continuation }
+      remaining = current_index ? mix.videos[(current_index + 1)..] : mix.videos
+      next_video = remaining.find { |video| !video.author.empty? }.try &.id
 
       response = {
-        "playlistHtml" => playlist_html,
-        "nextVideo"    => next_video,
+        "playlistHtml"  => playlist_html,
+        "nextVideo"     => next_video,
+        "currentVideo"  => (continuation if current_index),
       }.to_json
     end
 

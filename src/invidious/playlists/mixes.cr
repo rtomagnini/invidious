@@ -51,10 +51,11 @@ def fetch_mix(rdid, video_id, cookies = nil, locale = nil)
     title = item["title"]?.try &.["simpleText"].as_s
     next if !title
 
-    author = item["longBylineText"]["runs"][0]["text"].as_s
-    ucid = item["longBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].as_s
-    length_seconds = decode_length_seconds(item["lengthText"]["simpleText"].as_s)
-    index = item["navigationEndpoint"]["watchEndpoint"]["index"].as_i
+    author = item.dig?("longBylineText", "runs", 0, "text").try &.as_s || ""
+    ucid = item.dig?("longBylineText", "runs", 0, "navigationEndpoint", "browseEndpoint", "browseId").try &.as_s || ""
+    length_text = item.dig?("lengthText", "simpleText").try &.as_s
+    length_seconds = length_text ? decode_length_seconds(length_text) : 0
+    index = item.dig?("navigationEndpoint", "watchEndpoint", "index").try &.as_i || videos.size
 
     videos << MixVideo.new({
       title:          title,
@@ -67,7 +68,7 @@ def fetch_mix(rdid, video_id, cookies = nil, locale = nil)
     })
   end
 
-  if !cookies
+  if !cookies && !videos.empty?
     next_page = fetch_mix(rdid, videos[-1].id, response.cookies, locale)
     videos += next_page.videos
   end
@@ -81,39 +82,37 @@ def fetch_mix(rdid, video_id, cookies = nil, locale = nil)
   })
 end
 
-def template_mix(mix, listen)
-  html = <<-END_HTML
-    <h3>
-      <a href="/mix?list=#{mix["mixId"]}">
-        #{mix["title"]}
-      </a>
-    </h3>
-    <div class="pure-menu pure-menu-scrollable playlist-restricted">
-      <ol class="pure-menu-list">
-    END_HTML
+def template_mix_queue(mix : Mix, current_id : String, locale : String, listen : Bool = false, thin_mode : Bool = false, scrollable : Bool = false)
+  mix_id = URI.encode_www_form(mix.id)
 
-  mix["videos"].as_a.each do |video|
-    html += <<-END_HTML
-      <li class="pure-menu-item">
-        <a href="/watch?v=#{video["videoId"]}&list=#{mix["mixId"]}#{listen ? "&listen=1" : ""}">
-          <div class="thumbnail">
-              <img loading="lazy" class="thumbnail" src="/vi/#{video["videoId"]}/mqdefault.jpg" alt="" />
-              <p class="length">#{recode_length_seconds(video["lengthSeconds"].as_i)}</p>
-          </div>
-          <p style="width:100%">#{video["title"]}</p>
-          <p>
-              <b style="width:100%">#{video["author"]}</b>
-          </p>
+  String.build do |html|
+    html << %(<ol class="mix-queue#{" mix-queue-scroll" if scrollable}">)
+    mix.videos.each do |video|
+      video_id = URI.encode_www_form(video.id)
+      current = video.id == current_id
+      duration = recode_length_seconds(video.length_seconds) if video.length_seconds > 0
+      html << <<-END_HTML
+        <li class="mix-queue-item" id="#{video_id}">
+          <a href="/watch?v=#{video_id}&amp;list=#{mix_id}#{"&amp;listen=1" if listen}"#{" aria-current=\"true\"" if current}>
+        END_HTML
+      unless thin_mode
+        html << <<-END_HTML
+          <span class="mix-thumb">
+            <img loading="lazy" src="/vi/#{video_id}/mqdefault.jpg" alt="" width="320" height="180">
+            #{"<span class=\"mix-duration\">#{duration}</span>" if duration}
+          </span>
+          END_HTML
+      end
+      html << <<-END_HTML
+          <span class="mix-video-info" dir="auto">
+            <strong>#{HTML.escape(video.title)}</strong>
+            <span class="mix-video-meta">#{HTML.escape(video.author)}#{" · #{duration}" if thin_mode && duration}</span>
+            #{"<span class=\"mix-video-meta\"><i class=\"icon ion-ios-play mix-current-icon\" aria-hidden=\"true\"></i> #{I18n.translate(locale, "mix_current")}</span>" if current}
+          </span>
         </a>
       </li>
       END_HTML
+    end
+    html << "</ol>"
   end
-
-  html += <<-END_HTML
-      </ol>
-    </div>
-    <hr>
-    END_HTML
-
-  html
 end

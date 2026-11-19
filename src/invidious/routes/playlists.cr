@@ -450,7 +450,8 @@ module Invidious::Routes::Playlists
   end
 
   def self.mix(env)
-    locale = env.get("preferences").as(Preferences).locale
+    preferences = env.get("preferences").as(Preferences)
+    locale = preferences.locale
 
     rdid = env.params.query["list"]?
     if !rdid

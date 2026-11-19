@@ -65,10 +65,17 @@ function get_playlist(plid) {
         on200: function (response) {
             playlist.innerHTML = response.playlistHtml;
 
-            if (!response.nextVideo) return;
+            var nextVideo = document.getElementById(response.currentVideo || response.nextVideo);
+            if (nextVideo) {
+                if (response.currentVideo) {
+                    var queue = nextVideo.parentNode;
+                    queue.scrollTop += nextVideo.getBoundingClientRect().top - queue.getBoundingClientRect().top;
+                } else {
+                    nextVideo.parentNode.parentNode.scrollTop = nextVideo.offsetTop;
+                }
+            }
 
-            var nextVideo = document.getElementById(response.nextVideo);
-            nextVideo.parentNode.parentNode.scrollTop = nextVideo.offsetTop;
+            if (!response.nextVideo) return;
 
             player.on('ended', function () {
                 var url = new URL('https://example.com/watch?v=' + response.nextVideo);

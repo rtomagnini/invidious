@@ -1,4 +1,6 @@
 {
+    "mix_play": "Play mix",
+    "mix_current": "Current video",
     "watch_tools": "More actions",
     "watch_video_details": "Video details",
     "watch_recommendations": "Recommended videos",

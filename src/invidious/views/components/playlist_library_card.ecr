@@ -1,0 +1,32 @@
+<%
+    playlist_id = URI.encode_www_form(playlist.id)
+    cover = covers[playlist.id]?
+    link_url = playlist.id.starts_with?("RD") ? "/mix?list=#{playlist_id}&continuation=#{URI.encode_www_form(cover || "-----------")}" : "/playlist?list=#{playlist_id}"
+    edit_label = I18n.translate(locale, "generic_button_edit")
+%>
+<li class="playlist-library-card">
+    <a class="playlist-library-card-link" href="<%= HTML.escape(link_url) %>">
+        <span class="playlist-library-cover" aria-hidden="true">
+            <i class="icon ion-ios-albums"></i>
+            <% if !thin_mode && cover %>
+                <img src="/vi/<%= HTML.escape(cover) %>/mqdefault.jpg" alt="" width="320" height="180" loading="lazy" decoding="async">
+            <% end %>
+        </span>
+        <span class="playlist-library-card-copy">
+            <strong dir="auto"><%= HTML.escape(playlist.title) %></strong>
+            <span class="playlist-library-meta">
+                <%= I18n.translate_count(locale, "generic_videos_count", playlist.video_count, I18n::NumberFormatting::Separator) %>
+                <% if group == "created" %>
+                    <span class="playlist-library-privacy"><%= I18n.translate(locale, playlist.privacy.to_s) %></span>
+                <% end %>
+            </span>
+        </span>
+    </a>
+    <% if group == "created" %>
+        <a class="playlist-library-edit" href="/edit_playlist?list=<%= playlist_id %>"
+           title="<%= HTML.escape(edit_label) %>"
+           aria-label="<%= HTML.escape("#{edit_label}: #{playlist.title}") %>">
+            <i class="icon ion-md-create" aria-hidden="true"></i>
+        </a>
+    <% end %>
+</li>

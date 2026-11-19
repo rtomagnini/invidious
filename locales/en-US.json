@@ -1,4 +1,8 @@
 {
+    "playlist_library_created": "Created playlists",
+    "playlist_library_saved": "Saved playlists",
+    "playlist_library_empty_created": "Create a playlist to organize your videos.",
+    "playlist_library_empty_saved": "Playlists you save appear here.",
     "channel_sections": "Channel sections",
     "channel_sort_by": "Sort channel content",
     "subscription_manager_search": "Find a channel",

@@ -1,0 +1,195 @@
+.playlist-library {
+  box-sizing: border-box;
+  width: min(100%, 80rem);
+  margin-inline: auto;
+  padding: .5rem clamp(.85rem, 3vw, 2rem) 1.75rem;
+  color: var(--site-ink);
+}
+
+.playlist-library-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: .9rem;
+  margin-bottom: 1.5rem;
+}
+
+.playlist-library-heading h1 {
+  margin: 0 0 .35rem;
+  font-size: clamp(1.65rem, 4vw, 2.35rem);
+  letter-spacing: -.045em;
+}
+
+.playlist-library-heading p {
+  margin: 0;
+  color: var(--site-muted);
+  font-size: .9rem;
+}
+
+.playlist-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+
+.playlist-library .playlist-library-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2.35rem;
+  padding-inline: .7rem;
+  border: 1px solid var(--site-line);
+  border-radius: .55rem;
+  background: var(--site-surface);
+  color: var(--site-ink);
+  font-size: .875rem;
+}
+
+.playlist-library .playlist-library-actions a:hover {
+  background: var(--site-hover);
+}
+
+.playlist-library .playlist-library-actions .playlist-library-create {
+  border-color: transparent;
+  background: #3654b0;
+  color: #fff;
+  font-weight: 650;
+}
+
+.playlist-library .playlist-library-actions .playlist-library-create:hover {
+  background: #284295;
+}
+
+.playlist-library-section + .playlist-library-section {
+  margin-top: 1.5rem;
+}
+
+.playlist-library-section h2 {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  margin: 0 0 .7rem;
+  font-size: 1.1rem;
+}
+
+.playlist-library-count,
+.playlist-library-privacy {
+  padding: .18rem .4rem;
+  border-radius: .4rem;
+  background: var(--site-hover);
+  color: var(--site-muted);
+  font-size: .75rem;
+  font-weight: 500;
+}
+
+.playlist-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.playlist-library-card {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--site-line);
+  border-radius: .85rem;
+  background: var(--site-surface);
+}
+
+.playlist-library-card:focus-within,
+.playlist-library-card:hover {
+  border-color: var(--site-accent);
+}
+
+.playlist-library .playlist-library-card-link {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  color: var(--site-ink);
+}
+
+.playlist-library-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: .8rem .8rem 0 0;
+  background: var(--site-selected);
+  color: var(--site-accent);
+  font-size: 2rem;
+}
+
+.playlist-library-cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-library-card-copy {
+  display: block;
+  padding: .75rem;
+}
+
+.playlist-library-card:has(.playlist-library-edit) .playlist-library-card-copy {
+  padding-inline-end: 3rem;
+}
+
+.playlist-library-card-copy strong {
+  display: block;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.playlist-library-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .45rem;
+  margin-top: .35rem;
+  color: var(--site-muted);
+  font-size: .82rem;
+}
+
+.playlist-library .playlist-library-edit {
+  position: absolute;
+  inset-inline-end: .55rem;
+  inset-block-end: .55rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: .5rem;
+  color: var(--site-muted);
+}
+
+.playlist-library .playlist-library-edit:hover {
+  background: var(--site-hover);
+  color: var(--site-accent);
+}
+
+.playlist-library-empty {
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px dashed var(--site-line);
+  border-radius: .75rem;
+  color: var(--site-muted);
+  text-align: center;
+}
+
+.playlist-library a:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 34rem) {
+  .playlist-library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+  }
+}

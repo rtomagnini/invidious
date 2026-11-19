@@ -15,18 +15,12 @@ module Invidious::Routes::Feeds
 
     user = user.as(User)
 
-    # TODO: make a single DB call and separate the items here?
     items_created = Invidious::Database::Playlists.select_like_iv(user.email)
-    items_created.map! do |item|
-      item.author = ""
-      item
-    end
-
     items_saved = Invidious::Database::Playlists.select_not_like_iv(user.email)
-    items_saved.map! do |item|
-      item.author = ""
-      item
-    end
+    thin_mode = env.get("preferences").as(Preferences).thin_mode
+    cover_ids = (items_created + items_saved).map(&.id)
+    cover_ids.select!(&.starts_with?("RD")) if thin_mode
+    covers = Invidious::Database::Playlists.select_cover_ids(cover_ids)
 
     templated "feeds/playlists"
   end

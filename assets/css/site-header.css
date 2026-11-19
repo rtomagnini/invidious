@@ -4,7 +4,8 @@
 .site-footer,
 .preferences-page,
 .subscriptions-page,
-.channel-page {
+.channel-page,
+.playlist-library {
   --site-ink: #172032;
   --site-muted: #526079;
   --site-surface: #f4f6fa;
@@ -14,7 +15,7 @@
   --site-selected: #e5edff;
 }
 
-.dark-theme :is(.site-header, .subscription-toolbar, .subscription-notifications, .site-footer, .preferences-page, .subscriptions-page, .channel-page) {
+.dark-theme :is(.site-header, .subscription-toolbar, .subscription-notifications, .site-footer, .preferences-page, .subscriptions-page, .channel-page, .playlist-library) {
   --site-ink: #f1f3f8;
   --site-muted: #b4bed0;
   --site-surface: #1b1c20;
@@ -25,7 +26,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .no-theme :is(.site-header, .subscription-toolbar, .subscription-notifications, .site-footer, .preferences-page, .subscriptions-page, .channel-page) {
+  .no-theme :is(.site-header, .subscription-toolbar, .subscription-notifications, .site-footer, .preferences-page, .subscriptions-page, .channel-page, .playlist-library) {
     --site-ink: #f1f3f8;
     --site-muted: #b4bed0;
     --site-surface: #1b1c20;

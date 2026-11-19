@@ -136,6 +136,22 @@ module Invidious::Database::Playlists
     PG_DB.query_all(request, email, as: InvidiousPlaylist)
   end
 
+  def select_cover_ids(ids : Array(String)) : Hash(String, String)
+    return {} of String => String if ids.empty?
+
+    PG_DB.query_all(<<-SQL, ids, as: {String, String}).to_h
+      SELECT p.id, cover.id
+      FROM playlists p
+      JOIN LATERAL (
+        SELECT v.id FROM playlist_videos v
+        WHERE v.plid = p.id
+        ORDER BY array_position(p.index, v.index)
+        LIMIT 1
+      ) cover ON TRUE
+      WHERE p.id = ANY($1)
+      SQL
+  end
+
   def select_user_created_playlists(email : String) : Array({String, String})
     request = <<-SQL
       SELECT id,title FROM playlists

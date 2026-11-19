@@ -1,4 +1,9 @@
 {
+    "playlist_edit_heading": "Editar playlist",
+    "playlist_description_label": "Descrição",
+    "playlist_page_empty": "Esta playlist ainda não tem vídeos.",
+    "playlist_search_hint": "Busque um vídeo para adicionar a esta playlist.",
+    "playlist_remove_item": "Remover da playlist",
     "notification_inbox_empty": "Nenhuma notificação não lida.",
     "notification_inbox_clear": "Marcar tudo como lido",
     "notification_inbox_loading": "Carregando notificações…",

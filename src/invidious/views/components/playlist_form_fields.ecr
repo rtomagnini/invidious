@@ -1,0 +1,12 @@
+<label class="playlist-field" for="playlist-title-input">
+    <span><%= I18n.translate(locale, "Title") %></span>
+    <input id="playlist-title-input" name="title" type="text" maxlength="150" required value="<%= HTML.escape(form_title) %>">
+</label>
+<label class="playlist-field" for="playlist-privacy">
+    <span><%= I18n.translate(locale, "Playlist privacy") %></span>
+    <select name="privacy" id="playlist-privacy">
+        <% PlaylistPrivacy.names.each do |option| %>
+            <option value="<%= option %>" <%= "selected" if option == form_privacy %>><%= I18n.translate(locale, option) %></option>
+        <% end %>
+    </select>
+</label>

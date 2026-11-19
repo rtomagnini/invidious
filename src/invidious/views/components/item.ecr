@@ -168,6 +168,7 @@
                         <form data-onsubmit="return_false" action="/playlist_ajax?<%= form_parameters %>" method="post">
                             <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
                             <button type="submit" class="pure-button pure-button-secondary low-profile"
+                                    aria-label="<%= HTML.escape(I18n.translate(locale, "playlist_button_add_items")) %>"
                                     data-onclick="add_playlist_item" data-id="<%= item.id %>" data-plid="<%= plid_form %>"><i class="icon ion-md-add"></i></button>
                         </form>
                     <%- elsif item.is_a?(PlaylistVideo) && (plid_form = env.get?("remove_playlist_items")) -%>
@@ -175,6 +176,7 @@
                         <form data-onsubmit="return_false" action="/playlist_ajax?<%= form_parameters %>" method="post">
                             <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
                             <button type="submit" class="pure-button pure-button-secondary low-profile"
+                                    aria-label="<%= HTML.escape(I18n.translate(locale, "playlist_remove_item")) %>"
                                     data-onclick="remove_playlist_item" data-index="<%= item.index %>" data-plid="<%= plid_form %>"><i class="icon ion-md-trash"></i></button>
                         </form>
                     <%- end -%>

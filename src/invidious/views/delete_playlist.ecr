@@ -1,24 +1,17 @@
 <% content_for "header" do %>
 <title><%= I18n.translate(locale, "Delete playlist") %> - Invidious</title>
+<link rel="stylesheet" href="/css/playlist-pages.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<div class="h-box">
-    <form class="pure-form pure-form-aligned" action="/delete_playlist?list=<%= plid %>&referer=<%= URI.encode_www_form(referer) %>" method="post">
-        <legend><%= I18n.translate(locale, "Delete playlist `x`?", %|"#{HTML.escape(playlist.title)}"|) %></legend>
-
-        <div class="pure-g">
-            <div class="pure-u-1-2">
-                <button type="submit" name="submit" value="delete_playlist" class="pure-button pure-button-primary">
-                    <%= I18n.translate(locale, "Yes") %>
-                </button>
+<main class="playlist-page playlist-page-narrow" aria-labelledby="playlist-delete-title">
+    <div class="playlist-panel">
+        <h1 id="playlist-delete-title"><%= I18n.translate(locale, "Delete playlist `x`?", %|"#{HTML.escape(playlist.title)}"|) %></h1>
+        <form action="/delete_playlist?list=<%= plid %>&amp;referer=<%= URI.encode_www_form(referer) %>" method="post">
+            <input type="hidden" name="csrf_token" value="<%= HTML.escape(csrf_token) %>">
+            <div class="playlist-actions playlist-form-actions">
+                <a href="/playlist?list=<%= plid %>"><%= I18n.translate(locale, "generic_button_cancel") %></a>
+                <button class="playlist-delete" type="submit" name="submit" value="delete_playlist"><%= I18n.translate(locale, "generic_button_delete") %></button>
             </div>
-            <div class="pure-u-1-2">
-                <a class="pure-button" href="/playlist?list=<%= plid %>">
-                    <%= I18n.translate(locale, "No") %>
-                </a>
-            </div>
-        </div>
-
-        <input type="hidden" name="csrf_token" value="<%= HTML.escape(csrf_token) %>">
-    </form>
-</div>
+        </form>
+    </div>
+</main>

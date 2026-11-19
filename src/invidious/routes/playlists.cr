@@ -172,9 +172,9 @@ module Invidious::Routes::Playlists
 
     # Pagination
     page_nav_html = Frontend::Pagination.nav_numeric(locale,
-      base_url: "/playlist?list=#{playlist.id}",
+      base_url: "/edit_playlist?list=#{playlist.id}",
       current_page: page,
-      show_next: (items.size == 100)
+      show_next: (page.to_i64 * 100 < playlist.video_count)
     )
 
     templated "edit_playlist"
@@ -415,6 +415,8 @@ module Invidious::Routes::Playlists
       page_count += 1 if (playlist.video_count % 200) > 0
     end
 
+    page = Math.max(1, page)
+    page_count = Math.max(1, page_count)
     if page > page_count
       return env.redirect "/playlist?list=#{plid}&page=#{page_count}"
     end

@@ -1,4 +1,9 @@
 {
+    "search_home_heading": "Pesquise no Invidious",
+    "trending_categories": "Categorias em alta",
+    "trending_region": "Região",
+    "trending_apply_region": "Aplicar",
+    "trending_empty": "Nenhum resultado nesta categoria para esta região.",
     "playlist_edit_heading": "Editar playlist",
     "playlist_description_label": "Descrição",
     "playlist_page_empty": "Esta playlist ainda não tem vídeos.",

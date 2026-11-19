@@ -40,11 +40,12 @@ module Invidious::Routes::Feeds
     preferences = env.get("preferences").as(Preferences)
     locale = preferences.locale
 
-    trending_type = env.params.query["type"]?
-    trending_type ||= "Default"
+    trending_type = env.params.query["type"]?.try(&.downcase) == "gaming" ? "Gaming" : "Livestreams"
 
-    region = env.params.query["region"]?
-    region ||= preferences.region
+    preferred_region = (preferences.region || "US").upcase
+    region = (env.params.query["region"]? || preferred_region).upcase
+    region = preferred_region unless I18n::CONTENT_REGIONS.includes?(region)
+    region = "US" unless I18n::CONTENT_REGIONS.includes?(region)
 
     begin
       trending, plid = Invidious::Feeds::Trending.fetch(trending_type, region, locale)

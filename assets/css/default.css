@@ -730,7 +730,6 @@ h1, h2, h3, h4, h5, p,
 }
 
 /* Center the "invidious" logo on the search page */
-#logo > h1 { text-align: center; }
 
 /* IE11 fixes */
 :-ms-input-placeholder { color: #888; }

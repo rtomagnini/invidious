@@ -1,4 +1,9 @@
 {
+    "search_home_heading": "Search Invidious",
+    "trending_categories": "Trending categories",
+    "trending_region": "Region",
+    "trending_apply_region": "Apply",
+    "trending_empty": "Nothing trending in this category for this region.",
     "playlist_edit_heading": "Edit playlist",
     "playlist_description_label": "Description",
     "playlist_page_empty": "No videos in this playlist yet.",

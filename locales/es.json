@@ -1,4 +1,9 @@
 {
+    "error_page_title": "Algo salió mal",
+    "error_not_found": "Página no encontrada",
+    "error_not_found_detail": "No se ha encontrado la página solicitada.",
+    "error_home": "Inicio",
+    "error_technical_details": "Detalles técnicos",
     "mix_play": "Reproducir mezcla",
     "mix_current": "Vídeo actual",
     "watch_tools": "Más acciones",

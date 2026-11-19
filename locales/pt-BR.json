@@ -1,4 +1,9 @@
 {
+    "error_page_title": "Algo deu errado",
+    "error_not_found": "Página não encontrada",
+    "error_not_found_detail": "A página solicitada não foi encontrada.",
+    "error_home": "Início",
+    "error_technical_details": "Detalhes técnicos",
     "mix_play": "Reproduzir mix",
     "mix_current": "Vídeo atual",
     "watch_tools": "Mais ações",

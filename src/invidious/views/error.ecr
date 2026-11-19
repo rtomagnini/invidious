@@ -1,8 +1,23 @@
 <% content_for "header" do %>
-<title><%= "Error" %> - Invidious</title>
+<title><%= error_title %> - Invidious</title>
+<link rel="stylesheet" href="/css/error-page.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<div class="h-box">
-    <%= error_message %>
-    <%= next_steps %>
-</div>
+<main class="problem-page" aria-labelledby="problem-title">
+    <div class="problem-card">
+        <span class="problem-icon" aria-hidden="true"><i class="icon ion-ios-alert"></i></span>
+        <h1 id="problem-title"><%= error_title %></h1>
+        <div class="problem-message"><%= error_message %></div>
+        <nav class="problem-actions" aria-label="<%= I18n.translate(locale, "next_steps_error_message") %>">
+            <%= next_steps %>
+            <a href="/search"><i class="icon ion-ios-search" aria-hidden="true"></i> <%= I18n.translate(locale, "Search") %></a>
+            <a href="/"><i class="icon ion-ios-home" aria-hidden="true"></i> <%= I18n.translate(locale, "error_home") %></a>
+        </nav>
+        <% if diagnostics %>
+            <details class="problem-diagnostics">
+                <summary><%= I18n.translate(locale, "error_technical_details") %></summary>
+                <%= diagnostics %>
+            </details>
+        <% end %>
+    </div>
+</main>

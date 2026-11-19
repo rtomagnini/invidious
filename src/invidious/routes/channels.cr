@@ -366,7 +366,7 @@ module Invidious::Routes::Channels
     if KNOWN_TABS.includes? selected_tab
       brand_redirect(env)
     else
-      Invidious::Routes::Misc.home(env)
+      Errors.error_template(404, "error_not_found_detail")
     end
   end
 

@@ -1,4 +1,9 @@
 {
+    "error_page_title": "Something went wrong",
+    "error_not_found": "Page not found",
+    "error_not_found_detail": "The requested page could not be found.",
+    "error_home": "Home",
+    "error_technical_details": "Technical details",
     "mix_play": "Play mix",
     "mix_current": "Current video",
     "watch_tools": "More actions",

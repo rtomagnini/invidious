@@ -1,5 +1,7 @@
 module Invidious::Routes::ErrorRoutes
   def self.error_404(env)
+    Invidious::Routes::BeforeAll.handle(env) unless env.get?("preferences")
+
     # Workaround for #3117
     if HOST_URL.empty? && env.request.path.starts_with?("/v1/storyboards/sb")
       return env.redirect "#{env.request.path[15..]}?#{env.params.query}"
@@ -16,8 +18,7 @@ module Invidious::Routes::ErrorRoutes
       end
 
       if response.body.empty?
-        env.response.headers["Location"] = "/"
-        haltf env, status_code: 302
+        return Errors.error_template(404, "error_not_found_detail")
       end
 
       html = XML.parse_html(response.body)
@@ -46,7 +47,6 @@ module Invidious::Routes::ErrorRoutes
       end
     end
 
-    env.response.headers["Location"] = "/"
-    haltf env, status_code: 302
+    Errors.error_template(404, "error_not_found_detail")
   end
 end

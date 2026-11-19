@@ -57,36 +57,21 @@ module Errors
     url_search_issues += "?q=is:issue+is:open+"
     url_search_issues += URI.encode_www_form("[Bug] #{issue_title}")
 
-    url_switch = "https://redirect.invidious.io" + env.request.resource
-
     url_new_issue = "https://github.com/iv-org/invidious/issues/new"
     url_new_issue += "?labels=bug&template=bug_report.md&title="
     url_new_issue += URI.encode_www_form("[Bug] " + issue_title)
 
-    error_message = <<-END_HTML
-      <div class="error_message">
-        <h2>#{I18n.translate(locale, "crash_page_you_found_a_bug")}</h2>
-        <br/><br/>
-
-        <p><b>#{I18n.translate(locale, "crash_page_before_reporting")}</b></p>
-        <ul>
-          <li>#{I18n.translate(locale, "crash_page_refresh", env.request.resource)}</li>
-          <li>#{I18n.translate(locale, "crash_page_switch_instance", url_switch)}</li>
-          <li>#{I18n.translate(locale, "crash_page_read_the_faq", url_faq)}</li>
-          <li>#{I18n.translate(locale, "crash_page_search_issue", url_search_issues)}</li>
-        </ul>
-
-        <br/>
-        <p>#{I18n.translate(locale, "crash_page_report_issue", url_new_issue)}</p>
-
-        <!-- TODO: Add a "copy to clipboard" button -->
-        <pre class="error-issue-template">#{issue_template}</pre>
-      </div>
+    error_title = I18n.translate(locale, "error_page_title")
+    error_message = I18n.translate(locale, "crash_page_you_found_a_bug")
+    next_steps = error_redirect_helper(env, retry_request: true)
+    diagnostics = <<-END_HTML
+      <ul>
+        <li>#{I18n.translate(locale, "crash_page_read_the_faq", url_faq)}</li>
+        <li>#{I18n.translate(locale, "crash_page_search_issue", HTML.escape(url_search_issues))}</li>
+      </ul>
+      <p>#{I18n.translate(locale, "crash_page_report_issue", HTML.escape(url_new_issue))}</p>
+      <pre tabindex="0">#{issue_template}</pre>
       END_HTML
-
-    # Don't show the usual "next steps" widget. The same options are
-    # proposed above the error message, just worded differently.
-    next_steps = ""
 
     return templated "error"
   end
@@ -97,8 +82,10 @@ module Errors
 
     locale = env.get("preferences").as(Preferences).locale
 
+    error_title = I18n.translate(locale, status_code == 404 ? "error_not_found" : "error_page_title")
     error_message = I18n.translate(locale, message)
     next_steps = error_redirect_helper(env)
+    diagnostics = nil
 
     return templated "error"
   end
@@ -181,34 +168,24 @@ module Errors
   #  Redirect
   # -------------------
 
-  def error_redirect_helper(env : HTTP::Server::Context)
-    request_path = env.request.path
-
+  def error_redirect_helper(env : HTTP::Server::Context, retry_request : Bool = false)
+    path = env.request.path
     locale = env.get("preferences").as(Preferences).locale
+    public_content = path == "/search" || path == "/watch" || path.starts_with?("/channel/") ||
+                     path == "/mix" || (path == "/playlist" && env.params.query["list"]?.try &.starts_with?("PL"))
+    resource = env.request.resource
+    return "" unless resource.starts_with?("/") && !resource.starts_with?("//")
 
-    if request_path.starts_with?("/search") || request_path.starts_with?("/watch") ||
-       request_path.starts_with?("/channel") || request_path.starts_with?("/playlist?list=PL")
-      next_steps_text = I18n.translate(locale, "next_steps_error_message")
-      refresh = I18n.translate(locale, "next_steps_error_message_refresh")
-      go_to_youtube = I18n.translate(locale, "next_steps_error_message_go_to_youtube")
-      switch_instance = I18n.translate(locale, "Switch Invidious Instance")
-
-      return <<-END_HTML
-        <p style="margin-bottom: 4px;">#{next_steps_text}</p>
-        <ul>
-          <li>
-            <a href="#{env.request.resource}">#{refresh}</a>
-          </li>
-          <li>
-            <a href="/redirect?referer=#{env.get("current_page")}">#{switch_instance}</a>
-          </li>
-          <li>
-            <a rel="noreferrer noopener" href="https://www.youtube.com#{env.request.resource}">#{go_to_youtube}</a>
-          </li>
-        </ul>
-        END_HTML
-    else
-      return ""
+    String.build do |html|
+      if retry_request || public_content
+        html << %(<a href="#{HTML.escape(resource)}">#{I18n.translate(locale, "next_steps_error_message_refresh")}</a>)
+      end
+      if public_content
+        redirect_url = "/redirect?referer=#{URI.encode_www_form(resource)}"
+        html << %(<a href="#{HTML.escape(redirect_url)}">#{I18n.translate(locale, "Switch Invidious Instance")}</a>)
+        youtube_path = path == "/mix" ? "/watch?v=#{URI.encode_www_form(env.params.query["continuation"]? || env.params.query["list"]?.try(&.lchop("RD")) || "")}&list=#{URI.encode_www_form(env.params.query["list"]? || "")}" : resource
+        html << %(<a rel="noreferrer noopener" href="https://www.youtube.com#{HTML.escape(youtube_path)}">#{I18n.translate(locale, "next_steps_error_message_go_to_youtube")}</a>)
+      end
     end
   end
 end

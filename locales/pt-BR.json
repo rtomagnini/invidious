@@ -1,4 +1,8 @@
 {
+    "embed_error_title": "Vídeo indisponível",
+    "embed_error_detail": "O reprodutor não conseguiu carregar este vídeo.",
+    "embed_open_invidious": "Abrir no Invidious",
+    "embed_loading": "Carregando vídeo…",
     "error_page_title": "Algo deu errado",
     "error_not_found": "Página não encontrada",
     "error_not_found_detail": "A página solicitada não foi encontrada.",

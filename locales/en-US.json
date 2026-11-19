@@ -1,4 +1,8 @@
 {
+    "embed_error_title": "Video unavailable",
+    "embed_error_detail": "The player could not load this video.",
+    "embed_open_invidious": "Open in Invidious",
+    "embed_loading": "Loading video…",
     "error_page_title": "Something went wrong",
     "error_not_found": "Page not found",
     "error_not_found_detail": "The requested page could not be found.",

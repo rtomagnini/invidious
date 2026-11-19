@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="<%= locale %>">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= I18n.translate(locale, "embed_error_title") %> - Invidious</title>
+    <link rel="stylesheet" href="/css/embed.css?v=<%= ASSET_COMMIT %>">
+</head>
+<body class="embed-body embed-error-body">
+    <main class="embed-state">
+        <h1><%= I18n.translate(locale, "embed_error_title") %></h1>
+        <p><%= I18n.translate(locale, status_code == 404 ? "error_not_found_detail" : "embed_error_detail") %></p>
+        <div class="embed-actions">
+            <% if env.request.path.starts_with?("/embed/") %>
+                <a href="<%= HTML.escape(env.request.resource) %>"><%= I18n.translate(locale, "next_steps_error_message_refresh") %></a>
+            <% end %>
+            <a href="<%= HTML.escape(watch_url || "/search") %>" target="_blank" rel="noopener noreferrer"><%= I18n.translate(locale, "embed_open_invidious") %></a>
+        </div>
+    </main>
+</body>
+</html>

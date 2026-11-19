@@ -1,6 +1,22 @@
 {% skip_file if flag?(:api_only) %}
 
 module Invidious::Routes::Embed
+  private def self.error_page(env, status_code : Int32, error : Exception | String, video_id : String? = nil)
+    env.response.content_type = "text/html"
+    env.response.status_code = status_code
+    locale = env.get("preferences").as(Preferences).locale
+    LOGGER.warn("Embed failed (#{status_code}): #{error}")
+    watch_url = video_id ? watch_link(env, video_id) : nil
+    rendered "embed_error"
+  end
+
+  private def self.watch_link(env, video_id : String)
+    query = HTTP::Params.new
+    env.params.query.each { |key, value| query.add(key, value) unless key == "v" }
+    query["v"] = video_id
+    "/watch?#{query}"
+  end
+
   def self.redirect(env)
     locale = env.get("preferences").as(Preferences).locale
     if plid = env.params.query["list"]?.try &.gsub(/[^a-zA-Z0-9_-]/, "")
@@ -15,9 +31,9 @@ module Invidious::Routes::Embed
 
         first_playlist_video = videos[0].as(PlaylistVideo)
       rescue ex : NotFoundException
-        return Errors.error_template(404, ex)
+        return error_page(env, 404, ex)
       rescue ex
-        return Errors.error_template(500, ex)
+        return error_page(env, 500, ex)
       end
 
       url = "/embed/#{first_playlist_video.id}?#{env.params.query}"
@@ -76,9 +92,9 @@ module Invidious::Routes::Embed
 
           first_playlist_video = videos[0].as(PlaylistVideo)
         rescue ex : NotFoundException
-          return Errors.error_template(404, ex)
+          return error_page(env, 404, ex)
         rescue ex
-          return Errors.error_template(500, ex)
+          return error_page(env, 500, ex)
         end
 
         url = "/embed/#{first_playlist_video.id}"
@@ -101,7 +117,7 @@ module Invidious::Routes::Embed
       env.params.query.delete_all("channel")
 
       if !video_id || video_id == "live_stream"
-        return Errors.error_template(500, "Video is unavailable.")
+        return error_page(env, 404, "Video is unavailable.")
       end
 
       url = "/embed/#{video_id}"
@@ -121,6 +137,10 @@ module Invidious::Routes::Embed
       return env.redirect url
     end
 
+    unless id.matches?(/\A[a-zA-Z0-9_-]{11}\z/)
+      return error_page(env, 404, "Invalid video ID")
+    end
+
     params = Invidious::Videos.process_video_params(env.params.query, preferences)
 
     user = env.get?("user").try &.as(User)
@@ -134,9 +154,9 @@ module Invidious::Routes::Embed
     begin
       video = get_video(id, region: params.region)
     rescue ex : NotFoundException
-      return Errors.error_template(404, ex)
+      return error_page(env, 404, ex, id)
     rescue ex
-      return Errors.error_template(500, ex)
+      return error_page(env, 500, ex, id)
     end
 
     if preferences.annotations_subscribed &&
@@ -209,6 +229,7 @@ module Invidious::Routes::Embed
       invidious_companion = CONFIG.invidious_companion.sample
     end
 
+    watch_url = watch_link(env, video.id)
     rendered "embed"
   end
 end

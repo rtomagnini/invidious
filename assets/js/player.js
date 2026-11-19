@@ -201,16 +201,6 @@ var shareOptions = {
     }
 };
 
-if (location.pathname.startsWith('/embed/')) {
-    var overlay_content = '<h1><a rel="noopener noreferrer" target="_blank" href="' + location.origin + '/watch?v=' + video_data.id + '">' + player_data.title + '</a></h1>';
-    player.overlay({
-        overlays: [
-            { start: 'loadstart', content: overlay_content, end: 'playing', align: 'top'},
-            { start: 'pause',     content: overlay_content, end: 'playing', align: 'top'}
-        ]
-    });
-}
-
 // Detect mobile users and initialize mobileUi for better UX
 // Detection code taken from https://stackoverflow.com/a/20293441
 
@@ -829,23 +819,6 @@ if (navigator.vendor === 'Apple Computer, Inc.' && !video_data.params.listen && 
             player.play();
         });
     });
-}
-
-// Watch on Invidious link
-if (location.pathname.startsWith('/embed/')) {
-    const Button = videojs.getComponent('Button');
-    let watch_on_invidious_button = new Button(player);
-
-    // Create hyperlink for current instance
-    var redirect_element = document.createElement('a');
-    redirect_element.setAttribute('href', location.pathname.replace('/embed/', '/watch?v='));
-    redirect_element.appendChild(document.createTextNode('Invidious'));
-
-    watch_on_invidious_button.el().appendChild(redirect_element);
-    watch_on_invidious_button.addClass('watch-on-invidious');
-
-    var cb = player.getChild('ControlBar');
-    cb.addChild(watch_on_invidious_button);
 }
 
 addEventListener('DOMContentLoaded', function () {

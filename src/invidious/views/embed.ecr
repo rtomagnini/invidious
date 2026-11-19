@@ -6,15 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="thumbnail" content="<%= thumbnail %>">
     <%= rendered "components/player_sources" %>
-    <link rel="stylesheet" href="/videojs/videojs-overlay/videojs-overlay.css?v=<%= ASSET_COMMIT %>">
-    <script src="/videojs/videojs-overlay/videojs-overlay.js?v=<%= ASSET_COMMIT %>"></script>
     <link rel="stylesheet" href="/css/default.css?v=<%= ASSET_COMMIT %>">
     <link rel="stylesheet" href="/css/embed.css?v=<%= ASSET_COMMIT %>">
     <title><%= HTML.escape(video.title) %> - Invidious</title>
     <script src="/js/_helpers.js?v=<%= ASSET_COMMIT %>"></script>
 </head>
 
-<body class="dark-theme">
+<body class="dark-theme embed-body">
 <script id="video_data" type="application/json">
 <%=
 {
@@ -38,7 +36,18 @@
 %>
 </script>
 
-<%= rendered "components/player" %>
+<main class="embed-frame">
+    <a class="embed-title" href="<%= HTML.escape(watch_url) %>" target="_blank" rel="noopener noreferrer" dir="auto"><%= HTML.escape(video.title) %></a>
+    <span class="embed-loading" role="status" hidden><%= I18n.translate(locale, "embed_loading") %></span>
+    <div class="embed-state embed-playback-error" hidden>
+        <strong role="alert"><%= I18n.translate(locale, "embed_error_title") %></strong>
+        <div class="embed-actions">
+            <a href="<%= HTML.escape(env.request.resource) %>"><%= I18n.translate(locale, "next_steps_error_message_refresh") %></a>
+            <a href="<%= HTML.escape(watch_url) %>" target="_blank" rel="noopener noreferrer"><%= I18n.translate(locale, "embed_open_invidious") %></a>
+        </div>
+    </div>
+    <%= rendered "components/player" %>
+</main>
 <script src="/js/embed.js?v=<%= ASSET_COMMIT %>"></script>
 </body>
 </html>

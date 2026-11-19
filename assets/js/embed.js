@@ -1,6 +1,39 @@
 'use strict';
 var video_data = JSON.parse(document.getElementById('video_data').textContent);
 
+const embedFrame = document.querySelector('.embed-frame');
+const embedLoading = embedFrame.querySelector('.embed-loading');
+const embedError = embedFrame.querySelector('.embed-playback-error');
+const embedPlayer = player.el();
+let loadingTimer;
+
+embedPlayer.append(embedFrame.querySelector('.embed-title'), embedLoading, embedError);
+
+function clearLoading() {
+    clearTimeout(loadingTimer);
+    embedLoading.hidden = true;
+}
+
+function showLoading() {
+    clearLoading();
+    if (!player.paused()) {
+        loadingTimer = setTimeout(function () {
+            embedLoading.hidden = false;
+        }, 350);
+    }
+}
+
+function syncError() {
+    const failed = Boolean(player.error());
+    embedError.hidden = !failed;
+    embedPlayer.classList.toggle('embed-has-error', failed);
+}
+
+player.on(['play', 'waiting'], showLoading);
+player.on(['canplay', 'playing', 'pause', 'ended', 'loadstart', 'error'], clearLoading);
+player.on(['loadstart', 'playing', 'error'], syncError);
+syncError();
+
 function get_playlist(plid) {
     var plid_url;
     if (plid.startsWith('RD')) {
@@ -10,7 +43,7 @@ function get_playlist(plid) {
     } else {
         plid_url = '/api/v1/playlists/' + plid +
             '?index=' + video_data.index +
-            '&continuation' + video_data.id +
+            '&continuation=' + video_data.id +
             '&format=html&hl=' + video_data.preferences.locale;
     }
 

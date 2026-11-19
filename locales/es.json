@@ -1,4 +1,8 @@
 {
+    "history_empty": "No hay vídeos en esta parte de tu historial.",
+    "history_remove_video": "Quitar del historial",
+    "history_remove_error": "No se pudo quitar el vídeo. Inténtalo de nuevo.",
+    "history_clear_description": "Se quitarán todos los vídeos de tu historial de reproducciones.",
     "search_type_all": "Todo",
     "search_type_video": "Vídeos",
     "search_type_channel": "Canales",

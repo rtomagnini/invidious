@@ -73,7 +73,7 @@
         el.onclick = function () { mark_watched(el); };
     });
     document.querySelectorAll('[data-onclick="mark_unwatched"]').forEach(function (el) {
-        el.onclick = function () { mark_unwatched(el); };
+        el.onclick = function () { return mark_unwatched(el); };
     });
     document.querySelectorAll('[data-onclick="add_playlist_video"]').forEach(function (el) {
         el.onclick = function () { add_playlist_video(el); };

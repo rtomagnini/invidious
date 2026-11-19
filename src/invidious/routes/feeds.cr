@@ -111,8 +111,8 @@ module Invidious::Routes::Feeds
     user = env.get? "user"
     referer = get_referer(env)
 
-    page = env.params.query["page"]?.try &.to_i?
-    page ||= 1
+    page = env.params.query["page"]?.try &.to_i? || 1
+    page = Math.max(1, page)
 
     if !user
       return env.redirect referer
@@ -124,10 +124,12 @@ module Invidious::Routes::Feeds
     max_results ||= user.preferences.max_results
     max_results ||= CONFIG.default_user_preferences.max_results
 
-    if user.watched[(page - 1) * max_results]?
-      watched = user.watched.reverse[(page - 1) * max_results, max_results]
+    offset = (page.to_i64 - 1) * max_results
+    if offset < user.watched.size
+      watched = user.watched.reverse[offset, max_results]
     end
     watched ||= [] of String
+    watched_entries = Invidious::Database::Videos.select_history_entries(watched)
 
     # Used for pagination links
     base_url = "/feed/history"

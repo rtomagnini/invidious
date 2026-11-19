@@ -41,6 +41,21 @@ module Invidious::Database::Videos
     PG_DB.exec(request, video.id, video.info.to_json, video.updated)
   end
 
+  def select_history_entries(ids : Array(String)) : Array({String, String?, String?, String?})
+    return [] of {String, String?, String?, String?} if ids.empty?
+
+    PG_DB.query_all(<<-SQL, ids, as: {String, String?, String?, String?})
+      SELECT watched.id,
+        COALESCE(NULLIF(v.info::jsonb ->> 'title', ''), cv.title),
+        COALESCE(NULLIF(v.info::jsonb ->> 'author', ''), cv.author),
+        COALESCE(NULLIF(v.info::jsonb ->> 'lengthSeconds', '0'), cv.length_seconds::text)
+      FROM unnest($1::text[]) WITH ORDINALITY AS watched(id, position)
+      LEFT JOIN videos v ON v.id = watched.id
+      LEFT JOIN channel_videos cv ON cv.id = watched.id
+      ORDER BY watched.position
+      SQL
+  end
+
   def select(id : String) : Video?
     request = <<-SQL
       SELECT * FROM videos

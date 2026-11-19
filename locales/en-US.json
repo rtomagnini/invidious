@@ -1,4 +1,8 @@
 {
+    "history_empty": "No videos in this part of your history.",
+    "history_remove_video": "Remove from watch history",
+    "history_remove_error": "Could not remove the video. Try again.",
+    "history_clear_description": "This removes all videos from your watch history.",
     "search_type_all": "All",
     "search_type_video": "Videos",
     "search_type_channel": "Channels",

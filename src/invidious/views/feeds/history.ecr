@@ -1,59 +1,84 @@
 <% content_for "header" do %>
-<title><%= I18n.translate(locale, "History") %> - Invidious</title>
+<title><%= I18n.translate(locale, "Watch history") %> - Invidious</title>
+<link rel="stylesheet" href="/css/history.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<div class="pure-g h-box">
-    <div class="pure-u-1-3">
-        <h3><%= I18n.translate_count(locale, "generic_videos_count", user.watched.size, I18n::NumberFormatting::HtmlSpan) %></h3>
-    </div>
-    <div class="pure-u-1-3">
-        <h3 style="text-align:center">
-            <a href="/feed/subscriptions"><%= I18n.translate_count(locale, "generic_subscriptions_count", user.subscriptions.size, I18n::NumberFormatting::HtmlSpan) %></a>
-        </h3>
-    </div>
-    <div class="pure-u-1-3">
-        <h3 style="text-align:right">
-            <a href="/clear_watch_history"><%= I18n.translate(locale, "Clear watch history") %></a>
-        </h3>
-    </div>
-</div>
-
-<script id="watched_data" type="application/json">
-<%=
-{
-    "csrf_token" => URI.encode_www_form(env.get?("csrf_token").try &.as(String) || "")
-}.to_pretty_json
+<%
+    thin_mode = env.get("preferences").as(Preferences).thin_mode
+    csrf_token = HTML.escape(env.get?("csrf_token").try &.as(String) || "")
+    page_url = page > 1 ? IV::HttpServer::Utils.add_params_to_url(base_url, URI::Params{"page" => page.to_s}).to_s : base_url
+    page_referer = URI.encode_www_form(page_url)
+    show_next = max_results > 0 && page.to_i64 * max_results < user.watched.size
+    remove_label = HTML.escape(I18n.translate(locale, "history_remove_video"))
 %>
-</script>
-<script src="/js/watched_widget.js"></script>
 
-<div class="pure-g">
-    <% watched.each do |item| %>
-        <div class="pure-u-1 pure-u-md-1-4">
-            <div class="h-box">
-                <div class="thumbnail">
-                    <a style="width:100%" href="/watch?v=<%= item %>">
-                        <img class="thumbnail" src="/vi/<%= item %>/mqdefault.jpg" alt="" />
-                    </a>
-
-                    <div class="top-left-overlay"><div class="watched">
-                    <form data-onsubmit="return_false" action="/watch_ajax?action=mark_unwatched&id=<%= item %>&referer=<%= env.get("current_page") %>" method="post">
-                        <input type="hidden" name="csrf_token" value="<%= URI.encode_www_form(env.get?("csrf_token").try &.as(String) || "") %>">
-                        <button type="submit" class="pure-button pure-button-secondary low-profile"
-                                data-onclick="mark_unwatched" data-id="<%= item %>"><i class="icon ion-md-trash"></i></button>
-                    </form>
-                    </div></div>
-                </div>
-                <p></p>
-            </div>
+<main class="history-page" aria-labelledby="history-title">
+    <header class="history-heading">
+        <h1 id="history-title">
+            <%= I18n.translate(locale, "Watch history") %>
+            <span id="history-count" class="history-count" data-count="<%= user.watched.size %>" aria-live="polite"><%= number_with_separator(user.watched.size) %></span>
+        </h1>
+        <div class="history-actions">
+            <a href="/feed/subscriptions"><i class="icon ion-ios-albums" aria-hidden="true"></i> <%= I18n.translate(locale, "Subscriptions") %></a>
+            <a class="history-danger" id="history-clear" href="/clear_watch_history?referer=%2Ffeed%2Fhistory" <%= "hidden" if user.watched.empty? %>>
+                <i class="icon ion-md-trash" aria-hidden="true"></i> <%= I18n.translate(locale, "Clear watch history") %>
+            </a>
         </div>
-    <% end %>
-</div>
+    </header>
 
-<%=
-  IV::Frontend::Pagination.nav_numeric(locale,
-    base_url: base_url,
-    current_page: page,
-    show_next: (watched.size >= max_results)
-  )
-%>
+    <div class="history-empty" id="history-empty" <%= "hidden" unless watched.empty? %>>
+        <i class="icon ion-ios-time" aria-hidden="true"></i>
+        <p><%= I18n.translate(locale, "history_empty") %></p>
+    </div>
+    <p class="history-remove-error" id="history-remove-error" role="alert" hidden><%= I18n.translate(locale, "history_remove_error") %></p>
+
+    <div class="pure-g" id="history-videos">
+        <% watched_entries.each do |id, title, author, duration| %>
+            <% video_url = "/watch?v=#{URI.encode_www_form(id)}" %>
+            <div class="pure-u-1 pure-u-md-1-4 video-card-cell history-card-cell">
+                <article class="video-card">
+                    <div class="thumbnail video-card-thumbnail">
+                        <% if thin_mode %>
+                            <div class="thumbnail-placeholder"></div>
+                        <% else %>
+                            <a tabindex="-1" href="<%= video_url %>">
+                                <img loading="lazy" decoding="async" class="thumbnail" src="/vi/<%= URI.encode_www_form(id) %>/mqdefault.jpg" alt="">
+                            </a>
+                        <% end %>
+
+                        <div class="top-left-overlay">
+                            <form action="/watch_ajax?action=mark_unwatched&amp;id=<%= URI.encode_www_form(id) %>&amp;referer=<%= page_referer %>" method="post">
+                                <input type="hidden" name="csrf_token" value="<%= csrf_token %>">
+                                <button type="submit" class="pure-button pure-button-secondary low-profile" data-onclick="mark_unwatched" title="<%= remove_label %>" aria-label="<%= remove_label %>">
+                                    <i class="icon ion-md-trash" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <% if (seconds = duration.try(&.to_i?)) && seconds > 0 %>
+                            <div class="bottom-right-overlay video-card-badge-area">
+                                <span class="video-card-badge"><%= recode_length_seconds(seconds) %></span>
+                            </div>
+                        <% end %>
+                    </div>
+
+                    <div class="video-card-body">
+                        <a class="video-card-title" href="<%= video_url %>" dir="auto"><%= HTML.escape(title.presence || id) %></a>
+                        <% if author.presence %>
+                            <p class="history-video-author" dir="auto"><%= HTML.escape(author.not_nil!) %></p>
+                        <% end %>
+                    </div>
+                </article>
+            </div>
+        <% end %>
+    </div>
+
+    <% if page > 1 || show_next %>
+        <%= IV::Frontend::Pagination.nav_numeric(locale,
+            base_url: base_url,
+            current_page: page,
+            show_next: show_next
+        ) %>
+    <% end %>
+</main>
+<script src="/js/watched_widget.js?v=<%= ASSET_COMMIT %>"></script>

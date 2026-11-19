@@ -1,4 +1,13 @@
 {
+    "account_captcha_clock": "Reloj del CAPTCHA",
+    "account_confirm_password": "Confirmar la nueva contraseña",
+    "account_delete_description": "Esto elimina para siempre tu cuenta y sus datos.",
+    "account_youtube_export_help": "Cómo exportar desde YouTube",
+    "account_current_session": "Sesión actual",
+    "account_show_token": "Mostrar token completo",
+    "account_revoke_current": "Si revocas este token, se cerrará tu sesión actual.",
+    "account_revoke_description": "¿Revocar el acceso de este token?",
+    "account_authorize": "Autorizar",
     "search_home_heading": "Busca en Invidious",
     "trending_categories": "Categorías de tendencias",
     "trending_region": "Región",

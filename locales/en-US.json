@@ -1,4 +1,13 @@
 {
+    "account_captcha_clock": "CAPTCHA clock",
+    "account_confirm_password": "Confirm new password",
+    "account_delete_description": "This permanently deletes your account and its data.",
+    "account_youtube_export_help": "How to export from YouTube",
+    "account_current_session": "Current session",
+    "account_show_token": "Show full token",
+    "account_revoke_current": "Revoking this token signs you out of this session.",
+    "account_revoke_description": "Revoke access for this token?",
+    "account_authorize": "Authorize",
     "search_home_heading": "Search Invidious",
     "trending_categories": "Trending categories",
     "trending_region": "Region",

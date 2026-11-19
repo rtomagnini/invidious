@@ -1,24 +1,21 @@
 <% content_for "header" do %>
 <title><%= I18n.translate(locale, "Delete account") %> - Invidious</title>
+<link rel="stylesheet" href="/css/account.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<div class="h-box">
-    <form class="pure-form pure-form-aligned" action="/delete_account?referer=<%= URI.encode_www_form(referer) %>" method="post">
-        <legend><%= I18n.translate(locale, "Delete account?") %></legend>
-
-        <div class="pure-g">
-            <div class="pure-u-1-2">
-                <button type="submit" name="submit" value="delete_account" class="pure-button pure-button-primary">
-                    <%= I18n.translate(locale, "Yes") %>
-                </button>
-            </div>
-            <div class="pure-u-1-2">
-                <a class="pure-button" href="<%= URI.encode_www_form(referer) %>">
-                    <%= I18n.translate(locale, "No") %>
-                </a>
-            </div>
+<main class="account-page account-narrow" aria-labelledby="account-title">
+    <div class="account-panel">
+        <div class="account-heading">
+            <span class="account-icon" aria-hidden="true"><i class="icon ion-ios-alert"></i></span>
+            <h1 id="account-title"><%= I18n.translate(locale, "Delete account?") %></h1>
         </div>
-
-        <input type="hidden" name="csrf_token" value="<%= HTML.escape(csrf_token) %>">
-    </form>
-</div>
+        <p class="account-description"><%= I18n.translate(locale, "account_delete_description") %></p>
+        <form action="/delete_account?referer=<%= URI.encode_www_form(referer) %>" method="post">
+            <input type="hidden" name="csrf_token" value="<%= HTML.escape(csrf_token) %>">
+            <div class="account-actions">
+                <a class="account-button" href="<%= HTML.escape(referer) %>"><%= I18n.translate(locale, "generic_button_cancel") %></a>
+                <button type="submit" name="submit" value="delete_account" class="account-button account-danger"><%= I18n.translate(locale, "Delete account") %></button>
+            </div>
+        </form>
+    </div>
+</main>

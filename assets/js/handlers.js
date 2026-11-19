@@ -88,9 +88,6 @@ function localizeVideoSchedules(root) {
     document.querySelectorAll('[data-onclick="remove_playlist_item"]').forEach(function (el) {
         el.onclick = function () { remove_playlist_item(el); };
     });
-    document.querySelectorAll('[data-onclick="revoke_token"]').forEach(function (el) {
-        el.onclick = function () { revoke_token(el); };
-    });
     document.querySelectorAll('[data-onclick="notification_requestPermission"]').forEach(function (el) {
         el.onclick = function () { Notification.requestPermission(); };
     });
@@ -103,26 +100,6 @@ function localizeVideoSchedules(root) {
         el.onchange = update_volume_value;
     });
 
-
-    function revoke_token(target) {
-        var row = target.parentNode.parentNode.parentNode.parentNode.parentNode;
-        row.style.display = 'none';
-        var count = document.getElementById('count');
-        count.textContent--;
-
-        var url = '/token_ajax?action=revoke_token&redirect=false' +
-            '&referer=' + encodeURIComponent(location.href) +
-            '&session=' + target.getAttribute('data-session');
-
-        var payload = 'csrf_token=' + target.parentNode.querySelector('input[name="csrf_token"]').value;
-
-        helpers.xhr('POST', url, {payload: payload}, {
-            onNon200: function (xhr) {
-                count.textContent++;
-                row.style.display = '';
-            }
-        });
-    }
 
     // Handle keypresses
     addEventListener('keydown', function (event) {

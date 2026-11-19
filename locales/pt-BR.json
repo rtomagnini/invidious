@@ -1,4 +1,9 @@
 {
+    "search_type_all": "Tudo",
+    "search_type_video": "Vídeos",
+    "search_type_channel": "Canais",
+    "search_type_playlist": "Playlists",
+    "search_filters_advanced": "Mais filtros",
     "search_results_heading": "Resultados da pesquisa",
     "search_filters_active": "Ativos",
     "channel_result_open": "Ver canal",

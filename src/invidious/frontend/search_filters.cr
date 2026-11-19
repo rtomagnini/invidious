@@ -1,118 +1,51 @@
 module Invidious::Frontend::SearchFilters
   extend self
 
-  def generate(filters : Search::Filters, query : String, locale : String, search_privacy : Bool) : String
-    String.build(8000) do |str|
-      method = search_privacy ? "post" : "get"
-      str << %(<form class="search-filter-form" action="/search" method="#{method}">)
-      str << %(<input type="hidden" name="q" value=") << HTML.escape(query) << %(">)
+  def generate(filters : Search::Filters, locale : String) : String
+    String.build(5000) do |str|
       str << %(<div class="search-filter-grid">)
+      filter_select(date, Invidious::Search::Filters::Date)
+      filter_select(duration, Invidious::Search::Filters::Duration)
+      filter_select(sort, Invidious::Search::Filters::Sort)
+      str << "</div>"
 
-      filter_wrapper(date)
-      filter_wrapper(type)
-      filter_wrapper(duration)
-      filter_wrapper(features)
-      filter_wrapper(sort)
-
-      str << %(</div><div class="search-filter-apply"><button type="submit">)
-      str << I18n.translate(locale, "search_filters_apply_button")
-      str << %(</button></div></form>)
+      str << "<details class=\"search-filter-advanced\""
+      str << " open" if !filters.features.none? || filters.type.movie? || filters.type.show?
+      str << "><summary>" << I18n.translate(locale, "search_filters_advanced")
+      str << %( <i class="icon ion-ios-arrow-down search-filter-chevron" aria-hidden="true"></i></summary>)
+      str << %(<div class="search-filter-advanced-body">)
+      filter_select(type, Invidious::Search::Filters::Type)
+      str << %(<fieldset class="search-feature-group"><legend>)
+      str << I18n.translate(locale, "search_filters_features_label")
+      str << %(</legend><div class="search-feature-options">)
+      make_features_filter_options(str, filters.features, locale)
+      str << "</div></fieldset></div></details>"
     end
   end
 
-  # Generate wrapper HTML (`<div>`, filter name, etc...) around the
-  # `<input>` elements of a search filter
-  macro filter_wrapper(name)
-    str << %(<fieldset class="search-filter-group">)
-
-    str << "<legend>"
+  macro filter_select(name, enum_type)
+    str << %(<label class="search-filter-select"><span>)
     str << I18n.translate(locale, "search_filters_{{ name }}_label")
-    str << "</legend>"
-
-    str << %(<div class="search-filter-options">)
-    make_{{ name }}_filter_options(str, filters.{{ name }}, locale)
-    str << "</div></fieldset>"
-  end
-
-  # Generates the HTML for the list of radio buttons of the "date" search filter
-  def make_date_filter_options(str : String::Builder, value : Search::Filters::Date, locale : String)
-    {% for value in Invidious::Search::Filters::Date.constants %}
-      {% date = value.underscore %}
-
-      str << "\t\t\t\t\t\t<div>"
-      str << "<input type='radio' name='date' id='filter-date-{{ date }}' value='{{ date }}'"
-      str << " checked" if value.{{ date }}?
-      str << '>'
-
-      str << "<label for='filter-date-{{ date }}'>"
-      str << I18n.translate(locale, "search_filters_date_option_{{ date }}")
-      str << "</label></div>\n"
+    str << %(</span><select name="{{ name }}">)
+    {% for option in enum_type.resolve.constants %}
+      {% key = option.underscore %}
+      str << %(<option value="{{ key }}")
+      str << " selected" if filters.{{ name }}.{{ key }}?
+      str << ">" << I18n.translate(locale, "search_filters_{{ name }}_option_{{ key }}") << "</option>"
     {% end %}
+    str << "</select></label>"
   end
 
-  # Generates the HTML for the list of radio buttons of the "type" search filter
-  def make_type_filter_options(str : String::Builder, value : Search::Filters::Type, locale : String)
-    {% for value in Invidious::Search::Filters::Type.constants %}
-      {% type = value.underscore %}
-
-      str << "\t\t\t\t\t\t<div>"
-      str << "<input type='radio' name='type' id='filter-type-{{ type }}' value='{{ type }}'"
-      str << " checked" if value.{{ type }}?
-      str << '>'
-
-      str << "<label for='filter-type-{{ type }}'>"
-      str << I18n.translate(locale, "search_filters_type_option_{{ type }}")
-      str << "</label></div>\n"
-    {% end %}
-  end
-
-  # Generates the HTML for the list of radio buttons of the "duration" search filter
-  def make_duration_filter_options(str : String::Builder, value : Search::Filters::Duration, locale : String)
-    {% for value in Invidious::Search::Filters::Duration.constants %}
-      {% duration = value.underscore %}
-
-      str << "\t\t\t\t\t\t<div>"
-      str << "<input type='radio' name='duration' id='filter-duration-{{ duration }}' value='{{ duration }}'"
-      str << " checked" if value.{{ duration }}?
-      str << '>'
-
-      str << "<label for='filter-duration-{{ duration }}'>"
-      str << I18n.translate(locale, "search_filters_duration_option_{{ duration }}")
-      str << "</label></div>\n"
-    {% end %}
-  end
-
-  # Generates the HTML for the list of checkboxes of the "features" search filter
-  def make_features_filter_options(str : String::Builder, value : Search::Filters::Features, locale : String)
-    {% for value in Invidious::Search::Filters::Features.constants %}
-      {% if value.stringify != "All" && value.stringify != "None" %}
-        {% feature = value.underscore %}
-
-        str << "\t\t\t\t\t\t<div>"
-        str << "<input type='checkbox' name='features' id='filter-feature-{{ feature }}' value='{{ feature }}'"
-        str << " checked" if value.{{ feature }}?
-        str << '>'
-
-        str << "<label for='filter-feature-{{ feature }}'>"
-        str << I18n.translate(locale, "search_filters_features_option_{{ feature }}")
-        str << "</label></div>\n"
+  private def make_features_filter_options(str, features, locale)
+    {% for option in Invidious::Search::Filters::Features.constants %}
+      {% unless option.stringify == "All" || option.stringify == "None" %}
+        {% key = option.underscore %}
+        flag = Search::Filters::Features::{{ option }}
+        value = Search::Filters.format_features(flag)
+        str << %(<label><input type="checkbox" name="features" value=") << value << %(")
+        str << " checked" if features.{{ key }}?
+        str << %(><span>) << I18n.translate(locale, "search_filters_features_option_{{ key }}") << %(</span></label>)
       {% end %}
-    {% end %}
-  end
-
-  # Generates the HTML for the list of radio buttons of the "sort" search filter
-  def make_sort_filter_options(str : String::Builder, value : Search::Filters::Sort, locale : String)
-    {% for value in Invidious::Search::Filters::Sort.constants %}
-      {% sort = value.underscore %}
-
-      str << "\t\t\t\t\t\t<div>"
-      str << "<input type='radio' name='sort' id='filter-sort-{{ sort }}' value='{{ sort }}'"
-      str << " checked" if value.{{ sort }}?
-      str << '>'
-
-      str << "<label for='filter-sort-{{ sort }}'>"
-      str << I18n.translate(locale, "search_filters_sort_option_{{ sort }}")
-      str << "</label></div>\n"
     {% end %}
   end
 end

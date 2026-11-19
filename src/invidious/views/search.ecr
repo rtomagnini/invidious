@@ -1,5 +1,6 @@
 <%
     search_privacy = preferences.search_privacy
+    search_method = search_privacy ? "post" : "get"
     search_query = query.text.size > 30 ? HTML.escape(query.text[0,30].rstrip(".")) + "&hellip;" : HTML.escape(query.text)
 %>
 
@@ -16,15 +17,53 @@
                 <p dir="auto"><%= HTML.escape(query.text) %></p>
             <% end %>
         </div>
-        <details class="search-filter-disclosure">
-            <summary>
-                <i class="icon ion-ios-options" aria-hidden="true"></i>
-                <%= I18n.translate(locale, "search_filters_title") %>
-                <% unless query.filters.default? %><span class="search-filters-active"><%= I18n.translate(locale, "search_filters_active") %></span><% end %>
-                <i class="icon ion-ios-arrow-down search-filter-chevron" aria-hidden="true"></i>
-            </summary>
-            <%= Invidious::Frontend::SearchFilters.generate(query.filters, query.text, locale, search_privacy) %>
-        </details>
+
+        <% if query.type.regular? %>
+            <%
+                type_params = query.filters.to_iv_params
+                type_params.delete_all("type")
+                current_type = query.filters.type.to_s.downcase
+                search_types = {
+                    {"all", "ion-ios-apps"},
+                    {"video", "ion-ios-play"},
+                    {"channel", "ion-ios-person"},
+                    {"playlist", "ion-ios-albums"},
+                }
+            %>
+            <form class="search-type-bar" aria-label="<%= HTML.escape(I18n.translate(locale, "search_filters_type_label")) %>" action="/search" method="<%= search_method %>">
+                <input type="hidden" name="q" value="<%= HTML.escape(query.text) %>">
+                <input type="hidden" name="region" value="<%= HTML.escape(query.region.to_s) %>">
+                <% type_params.each do |name, value| %>
+                    <input type="hidden" name="<%= HTML.escape(name) %>" value="<%= HTML.escape(value) %>">
+                <% end %>
+                <% search_types.each do |type, icon| %>
+                    <button type="submit" name="type" value="<%= type %>" <%= %(aria-current="true") if current_type == type %>>
+                        <i class="icon <%= icon %>" aria-hidden="true"></i>
+                        <%= I18n.translate(locale, "search_type_#{type}") %>
+                    </button>
+                <% end %>
+            </form>
+
+            <details class="search-filter-disclosure">
+                <summary>
+                    <i class="icon ion-ios-options" aria-hidden="true"></i>
+                    <%= I18n.translate(locale, "search_filters_title") %>
+                    <% filters = query.filters %>
+                    <% if !filters.date.none? || !filters.duration.none? || !filters.sort.relevance? || !filters.features.none? || filters.type.movie? || filters.type.show? %>
+                        <span class="search-filters-active"><%= I18n.translate(locale, "search_filters_active") %></span>
+                    <% end %>
+                    <i class="icon ion-ios-arrow-down search-filter-chevron" aria-hidden="true"></i>
+                </summary>
+                <form class="search-filter-form" action="/search" method="<%= search_method %>">
+                    <input type="hidden" name="q" value="<%= HTML.escape(query.text) %>">
+                    <input type="hidden" name="region" value="<%= HTML.escape(query.region.to_s) %>">
+                    <%= Invidious::Frontend::SearchFilters.generate(query.filters, locale) %>
+                    <div class="search-filter-apply">
+                        <button type="submit"><%= I18n.translate(locale, "search_filters_apply_button") %></button>
+                    </div>
+                </form>
+            </details>
+        <% end %>
     </header>
 
     <% if items.empty? %>

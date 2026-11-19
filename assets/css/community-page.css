@@ -1,0 +1,92 @@
+.community-page {
+  width: min(calc(100% - 1.3rem), 52rem);
+  margin: 1rem auto 2rem;
+  color: var(--site-ink);
+}
+
+.community-feed { display: grid; gap: .8rem; }
+
+.community-panel,
+.community-feed > .comment-entry {
+  box-sizing: border-box;
+  padding: clamp(.9rem, 3vw, 1.35rem);
+  border: 1px solid var(--site-line);
+  border-radius: .9rem;
+  background: var(--site-surface);
+}
+
+.community-panel { margin-top: .8rem; }
+
+.community-panel h1 {
+  margin: 0 0 .85rem;
+  font-size: 1.2rem;
+}
+
+.community-page .community-back {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-bottom: .75rem;
+  color: var(--site-muted);
+}
+
+.community-page .comment-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .75rem;
+}
+
+.community-page .comment-entry:has(> .comment-avatar img) {
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+}
+
+.community-page .comment-entry > :is(.comment-avatar, .comment-main) { width: auto; }
+.community-page .comment-avatar:not(:has(img)) { display: none; }
+
+.community-page .comment-avatar img {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.community-page .comment-main {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.community-page .comment-author { margin: 0 0 .4rem; }
+.community-page .comment-text { line-height: 1.55; }
+
+.community-page .comment-meta {
+  margin: .65rem 0 .25rem;
+  color: var(--site-muted);
+  font-size: .82rem;
+}
+
+.community-page .comment-text + .pure-g,
+.community-page .carousel { margin-top: .7rem; }
+
+.community-page .comment-main :is(img, iframe) { border-radius: .55rem; }
+.community-page .comment-meta img { border-radius: 50%; }
+.community-page .comment-main iframe { border: 0; }
+
+.community-panel .comment-entry {
+  padding: .75rem 0;
+  border-top: 1px solid var(--site-line);
+}
+
+.community-page :is(a, [tabindex]):focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 32rem) {
+  .community-page .comment-entry:has(> .comment-avatar img) {
+    grid-template-columns: 1.9rem minmax(0, 1fr);
+    gap: .55rem;
+  }
+
+  .community-page .comment-avatar img { width: 1.9rem; height: 1.9rem; }
+}

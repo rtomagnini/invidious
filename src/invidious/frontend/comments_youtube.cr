@@ -70,17 +70,18 @@ module Invidious::Frontend::Comments
           end
         end
         html << <<-END_HTML
-          <div class="pure-g" style="width:100%">
-            <div class="channel-profile pure-u-4-24 pure-u-md-2-24">
-              <img loading="lazy" style="margin-right:1em;margin-top:1em;width:90%" src="#{author_thumbnail}" alt="" />
+          <div class="pure-g comment-entry" style="width:100%">
+            <div class="channel-profile comment-avatar pure-u-4-24 pure-u-md-2-24">
+              #{%(<img loading="lazy" src="#{HTML.escape(author_thumbnail)}" alt="">) unless author_thumbnail.empty?}
             </div>
-            <div class="pure-u-20-24 pure-u-md-22-24">
-              <p>
+            <div class="comment-main pure-u-20-24 pure-u-md-22-24">
+              <p class="comment-author">
                 <b>
                   <a class="#{child["authorIsChannelOwner"] == true ? "channel-owner" : ""}" href="#{child["authorUrl"]}">#{author_name}</a>
                 </b>
                 #{sponsor_icon}
-                <p style="white-space:pre-wrap">#{child["contentHtml"]}</p>
+              </p>
+              <div class="comment-text" dir="auto" style="white-space:pre-wrap">#{child["contentHtml"]}</div>
           END_HTML
 
         if child["attachment"]?
@@ -100,14 +101,14 @@ module Invidious::Frontend::Comments
           when "video"
             if attachment["error"]?
               html << <<-END_HTML
-                <div class="pure-g video-iframe-wrapper">
+                <div class="comment-attachment">
                   <p>#{attachment["error"]}</p>
                 </div>
                 END_HTML
             else
               html << <<-END_HTML
                 <div class="pure-g video-iframe-wrapper">
-                  <iframe class="video-iframe" src='/embed/#{attachment["videoId"]?}?autoplay=0'></iframe>
+                  <iframe class="video-iframe" loading="lazy" title="#{HTML.escape(I18n.translate(locale, "Video mode"))}" src="/embed/#{attachment["videoId"]?}?autoplay=0" allowfullscreen></iframe>
                 </div>
                 END_HTML
             end
@@ -145,7 +146,7 @@ module Invidious::Frontend::Comments
         end
 
         html << <<-END_HTML
-          <p>
+          <p class="comment-meta">
             <span title="#{Time.unix(child["published"].as_i64).to_s(I18n.translate(locale, "%A %B %-d, %Y"))}">#{I18n.translate(locale, "`x` ago", recode_date(Time.unix(child["published"].as_i64), locale))} #{child["isEdited"] == true ? I18n.translate(locale, "(edited)") : ""}</span>
             |
           END_HTML

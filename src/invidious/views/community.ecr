@@ -14,19 +14,20 @@
 <link rel="alternate" href="<%= youtube_url %>">
 <title><%= author %> - Invidious</title>
 <link rel="stylesheet" href="/css/channel-page.css?v=<%= ASSET_COMMIT %>">
+<link rel="stylesheet" href="/css/community-page.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
 <%= rendered "components/channel_info" %>
 
-<% if error_message %>
-    <div class="h-box">
-        <p><%= error_message %></p>
-    </div>
-<% else %>
-    <div class="h-box pure-g comments" id="comments">
-        <%= IV::Frontend::Comments.template_youtube(items.not_nil!, locale, thin_mode) %>
-    </div>
-<% end %>
+<section class="community-page" aria-label="<%= HTML.escape(I18n.translate(locale, "channel_tab_posts_label")) %>">
+    <% if error_message %>
+        <p class="community-panel"><%= error_message %></p>
+    <% else %>
+        <div class="community-feed" id="comments">
+            <%= IV::Frontend::Comments.template_youtube(items.not_nil!, locale, thin_mode) %>
+        </div>
+    <% end %>
+</section>
 
 <script id="community_data" type="application/json">
 <%=

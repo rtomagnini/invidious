@@ -1,19 +1,12 @@
 module Invidious::Frontend::SearchFilters
   extend self
 
-  # Generate the search filters collapsable widget.
-  def generate(filters : Search::Filters, query : String, page : Int, locale : String) : String
-    return String.build(8000) do |str|
-      str << "<div id='filters'>\n"
-      str << "\t<details id='filters-collapse'>"
-      str << "\t\t<summary>" << I18n.translate(locale, "search_filters_title") << "</summary>\n"
-
-      str << "\t\t<div id='filters-box'><form action='/search' method='get'>\n"
-
-      str << "\t\t\t<input type='hidden' name='q' value='" << HTML.escape(query) << "'>\n"
-      str << "\t\t\t<input type='hidden' name='page' value='" << page << "'>\n"
-
-      str << "\t\t\t<div id='filters-flex'>"
+  def generate(filters : Search::Filters, query : String, locale : String, search_privacy : Bool) : String
+    String.build(8000) do |str|
+      method = search_privacy ? "post" : "get"
+      str << %(<form class="search-filter-form" action="/search" method="#{method}">)
+      str << %(<input type="hidden" name="q" value=") << HTML.escape(query) << %(">)
+      str << %(<div class="search-filter-grid">)
 
       filter_wrapper(date)
       filter_wrapper(type)
@@ -21,34 +14,24 @@ module Invidious::Frontend::SearchFilters
       filter_wrapper(features)
       filter_wrapper(sort)
 
-      str << "\t\t\t</div>\n"
-
-      str << "\t\t\t<div id='filters-apply'>"
-      str << "<button type='submit' class=\"pure-button pure-button-primary\">"
+      str << %(</div><div class="search-filter-apply"><button type="submit">)
       str << I18n.translate(locale, "search_filters_apply_button")
-      str << "</button></div>\n"
-
-      str << "\t\t</form></div>\n"
-
-      str << "\t</details>\n"
-      str << "</div>\n"
+      str << %(</button></div></form>)
     end
   end
 
   # Generate wrapper HTML (`<div>`, filter name, etc...) around the
   # `<input>` elements of a search filter
   macro filter_wrapper(name)
-    str << "\t\t\t\t<div class=\"filter-column\"><fieldset>\n"
+    str << %(<fieldset class="search-filter-group">)
 
-    str << "\t\t\t\t\t<legend><div class=\"filter-name underlined\">"
+    str << "<legend>"
     str << I18n.translate(locale, "search_filters_{{ name }}_label")
-    str << "</div></legend>\n"
+    str << "</legend>"
 
-    str << "\t\t\t\t\t<div class=\"filter-options\">\n"
+    str << %(<div class="search-filter-options">)
     make_{{ name }}_filter_options(str, filters.{{ name }}, locale)
-    str << "\t\t\t\t\t</div>"
-
-    str << "\t\t\t\t</fieldset></div>\n"
+    str << "</div></fieldset>"
   end
 
   # Generates the HTML for the list of radio buttons of the "date" search filter

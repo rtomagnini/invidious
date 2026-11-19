@@ -4,23 +4,36 @@
 %>
 
 <% content_for "header" do %>
-<title><%= search_privacy ? "Search" : search_query %> - Invidious</title>
+<title><%= search_privacy ? I18n.translate(locale, "Search") : search_query %> - Invidious</title>
 <link rel="stylesheet" href="/css/search.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<!-- Search redirection and filtering UI -->
-<%= Invidious::Frontend::SearchFilters.generate(query.filters, query.text, query.page, locale) %>
-<hr/>
+<main class="search-results" aria-labelledby="search-results-title">
+    <header class="search-results-header">
+        <div class="search-results-heading">
+            <h1 id="search-results-title"><%= I18n.translate(locale, "search_results_heading") %></h1>
+            <% unless query.text.empty? %>
+                <p dir="auto"><%= HTML.escape(query.text) %></p>
+            <% end %>
+        </div>
+        <details class="search-filter-disclosure">
+            <summary>
+                <i class="icon ion-ios-options" aria-hidden="true"></i>
+                <%= I18n.translate(locale, "search_filters_title") %>
+                <% unless query.filters.default? %><span class="search-filters-active"><%= I18n.translate(locale, "search_filters_active") %></span><% end %>
+                <i class="icon ion-ios-arrow-down search-filter-chevron" aria-hidden="true"></i>
+            </summary>
+            <%= Invidious::Frontend::SearchFilters.generate(query.filters, query.text, locale, search_privacy) %>
+        </details>
+    </header>
 
-
-<%- if items.empty? -%>
-<div class="h-box no-results-error">
-    <div>
-        <%= I18n.translate(locale, "search_message_no_results") %><br/><br/>
-        <%= I18n.translate(locale, "search_message_change_filters_or_query") %><br/><br/>
-        <%= I18n.translate(locale, "search_message_use_another_instance", redirect_url) %>
-    </div>
-</div>
-<%- else -%>
-    <%= rendered "components/items_paginated" %>
-<%- end -%>
+    <% if items.empty? %>
+        <div class="search-empty">
+            <h2><%= I18n.translate(locale, "search_message_no_results") %></h2>
+            <p><%= I18n.translate(locale, "search_message_change_filters_or_query") %></p>
+            <p><%= I18n.translate(locale, "search_message_use_another_instance", redirect_url) %></p>
+        </div>
+    <% else %>
+        <%= rendered "components/items_paginated" %>
+    <% end %>
+</main>

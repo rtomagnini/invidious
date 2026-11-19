@@ -5,32 +5,36 @@
   author_verified = item.responds_to?(:author_verified) && item.author_verified
 -%>
 
-<div class="pure-u-1 pure-u-md-1-4<%= " video-card-cell" if video_item %>">
-    <div class="<%= video_item ? "video-card" : "h-box" %>">
+<div class="pure-u-1 pure-u-md-1-4<%= " video-card-cell" if video_item || item.is_a?(SearchChannel) %>">
+    <div class="<%= video_item ? "video-card" : (item.is_a?(SearchChannel) ? "channel-result-card" : "h-box") %>">
         <% case item when %>
         <% when SearchChannel %>
-            <% if !thin_mode %>
-                <a tabindex="-1" href="/channel/<%= item.ucid %>">
-                    <center>
-                        <img loading="lazy" style="width:56.25%" src="/ggpht<%= URI.parse(item.author_thumbnail).request_target.gsub(/=s\d+/, "=s176") %>" alt="" />
-                    </center>
-                </a>
-            <%- else -%>
-                <div class="thumbnail-placeholder" style="width:56.25%"></div>
-            <% end %>
-
-            <div class="video-card-row flexible">
-                <div class="flex-left"><a href="/channel/<%= item.ucid %>">
-                    <p class="channel-name" dir="auto"><%= HTML.escape(item.author) %>
-                        <%- if author_verified %>&nbsp;<i class="icon ion ion-md-checkmark-circle"></i><% end -%>
-                    </p>
-                </a></div>
-            </div>
-
-            <% if !item.channel_handle.nil? %><p class="channel-name" dir="auto"><%= item.channel_handle %></p><% end %>
-            <p><%= I18n.translate_count(locale, "generic_subscribers_count", item.subscriber_count, I18n::NumberFormatting::Separator) %></p>
-            <% if !item.auto_generated && item.channel_handle.nil? %><p><%= I18n.translate_count(locale, "generic_videos_count", item.video_count, I18n::NumberFormatting::Separator) %></p><% end %>
-            <h5><%= item.description_html %></h5>
+            <a class="channel-result-link" href="/channel/<%= item.ucid %>">
+                <span class="channel-result-identity">
+                    <span class="channel-result-avatar" aria-hidden="true">
+                        <%= HTML.escape(item.author.strip[0, 1].upcase) %>
+                        <% unless thin_mode || item.author_thumbnail.blank? %>
+                            <img loading="lazy" decoding="async" width="64" height="64" src="/ggpht<%= HTML.escape(URI.parse(item.author_thumbnail).request_target.gsub(/=s\d+/, "=s176")) %>" alt="">
+                        <% end %>
+                    </span>
+                    <span class="channel-result-name">
+                        <strong dir="auto"><%= HTML.escape(item.author) %><% if author_verified %> <i class="icon ion-md-checkmark-circle" aria-hidden="true"></i><% end %></strong>
+                        <% if handle = item.channel_handle.presence %>
+                            <span dir="auto"><%= HTML.escape(handle) %></span>
+                        <% end %>
+                    </span>
+                </span>
+                <span class="channel-result-meta">
+                    <span><%= I18n.translate_count(locale, "generic_subscribers_count", item.subscriber_count, I18n::NumberFormatting::Separator) %></span>
+                    <% if !item.auto_generated && item.channel_handle.nil? %>
+                        <span><%= I18n.translate_count(locale, "generic_videos_count", item.video_count, I18n::NumberFormatting::Separator) %></span>
+                    <% end %>
+                </span>
+                <% unless item.description_html.blank? %>
+                    <span class="channel-result-description" dir="auto"><%= HTML.escape(Invidious::Helpers.html_to_content(item.description_html)) %></span>
+                <% end %>
+                <span class="channel-result-action"><%= I18n.translate(locale, "channel_result_open") %> <i class="icon ion-ios-arrow-forward" aria-hidden="true"></i></span>
+            </a>
         <% when SearchHashtag %>
             <% if !thin_mode %>
                 <a tabindex="-1" href="<%= item.url %>">

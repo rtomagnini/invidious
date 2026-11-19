@@ -35,6 +35,34 @@
   }
 }
 
+.site-switch {
+  appearance: none;
+  flex: none;
+  box-sizing: border-box;
+  width: 2.5rem;
+  height: 1.5rem;
+  margin: .25rem 0;
+  border: 1px solid var(--site-muted);
+  border-radius: 2rem;
+  background: radial-gradient(circle at .69rem 50%, var(--site-muted) .42rem, transparent .45rem) var(--site-hover);
+  cursor: pointer;
+}
+
+.site-switch:checked {
+  border-color: #3654b0;
+  background: radial-gradient(circle at calc(100% - .69rem) 50%, #fff .42rem, transparent .45rem) #3654b0;
+}
+
+.site-switch:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+
+@media (forced-colors: active) {
+  .site-switch { appearance: auto; }
+}
+
 .site-footer {
   margin-top: auto;
   padding: 1.25rem 1rem;

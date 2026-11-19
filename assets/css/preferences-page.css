@@ -160,28 +160,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.pref-row > input[type="checkbox"] {
-  appearance: none;
-  justify-self: end;
-  box-sizing: border-box;
-  width: 2.5rem;
-  height: 1.5rem;
-  margin: .25rem 0;
-  border: 1px solid var(--site-muted);
-  border-radius: 2rem;
-  background: radial-gradient(circle at .69rem 50%, var(--site-muted) .42rem, transparent .45rem) var(--site-hover);
-  cursor: pointer;
-}
-
-.pref-row > input[type="checkbox"]:checked {
-  border-color: #3654b0;
-  background: radial-gradient(circle at calc(100% - .69rem) 50%, #fff .42rem, transparent .45rem) #3654b0;
-}
-
-.pref-row > input[type="checkbox"]:disabled {
-  opacity: .55;
-  cursor: default;
-}
+.pref-row > .site-switch { justify-self: end; }
 
 .preferences-action-grid {
   display: grid;
@@ -260,8 +239,4 @@
   }
 
   .preferences-save button { width: 100%; }
-}
-
-@media (forced-colors: active) {
-  .pref-row > input[type="checkbox"] { appearance: auto; }
 }

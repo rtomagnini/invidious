@@ -191,12 +191,12 @@
 .subscription-filter label {
   display: flex;
   align-items: center;
-  gap: .45rem;
-  min-height: 2rem;
+  justify-content: space-between;
+  gap: .8rem;
+  min-height: 2.4rem;
+  border-bottom: 1px solid var(--site-line);
   cursor: pointer;
 }
-
-.subscription-filter input { accent-color: #5275d6; }
 .subscription-filter-actions { margin-top: .35rem; }
 
 .subscription-filter-actions .subscription-save {

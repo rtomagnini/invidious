@@ -74,8 +74,8 @@
                                 <legend><%= I18n.translate(locale, "subscription_filter_feed_types") %></legend>
                                 <% options.each do |name, code| %>
                                     <label>
-                                        <input type="checkbox" name="filter_<%= name %>" <%= "checked" if selected.includes?(code) %>>
-                                        <%= I18n.translate(locale, "subscription_filter_#{name}") %>
+                                        <span><%= I18n.translate(locale, "subscription_filter_#{name}") %></span>
+                                        <input type="checkbox" class="site-switch" name="filter_<%= name %>" <%= "checked" if selected.includes?(code) %>>
                                     </label>
                                 <% end %>
                                 <div class="subscription-filter-actions">

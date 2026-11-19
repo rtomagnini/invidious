@@ -88,16 +88,6 @@ module Invidious::Routes::Feeds
 
     videos, notifications = Invidious::User::Users.get_subscription_feed(user, max_results, page)
 
-    if CONFIG.enable_user_notifications
-      # "updated" here is used for delivering new notifications, so if
-      # we know a user has looked at their feed e.g. in the past 10 minutes,
-      # they've already seen a video posted 20 minutes ago, and don't need
-      # to be notified.
-      Invidious::Database::Users.clear_notifications(user)
-      user.notifications = [] of String
-    end
-    env.set "user", user
-
     # Used for pagination links
     base_url = "/feed/subscriptions"
     base_url += "?max_results=#{max_results}" if env.params.query.has_key?("max_results")

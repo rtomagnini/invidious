@@ -42,15 +42,11 @@ function create_notification_stream(subscriptions) {
 
         delivered.push(notification.videoId);
 
-        let notification_count = helpers.storage.get(STORAGE_KEY_NOTIF_COUNT) || 0;
-        notification_count++;
-        helpers.storage.set(STORAGE_KEY_NOTIF_COUNT, notification_count);
-
-        update_ticker_count();
+        refreshNotificationInbox();
 
         // permission for notifications handled on settings page. JS handler is in handlers.js
         if (window.Notification && Notification.permission === 'granted') {
-            var notification_text = notification.liveNow ? notification_data.live_now_text : notification_data.upload_text;
+            var notification_text = notification.liveNow ? notification_data.live_upload_text : notification_data.upload_text;
             notification_text = notification_text.replace('`x`', notification.author);
 
             var system_notification = new Notification(notification_text, {
@@ -86,6 +82,104 @@ function update_ticker_count() {
         'icon ion-ios-notifications' : 'icon ion-ios-notifications-outline';
 }
 
+var inbox = document.getElementById('notification-inbox');
+var inboxContent = document.getElementById('notification-inbox-content');
+var inboxClear = document.getElementById('notification-inbox-clear');
+var inboxLoading = document.getElementById('notification-inbox-loading');
+var inboxError = document.getElementById('notification-inbox-error');
+var inboxRequest = 0;
+var inboxClearing = false;
+
+function publishNotificationCount(count) {
+    if (helpers.storage.get(STORAGE_KEY_NOTIF_COUNT) !== count)
+        helpers.storage.set(STORAGE_KEY_NOTIF_COUNT, count);
+    update_ticker_count();
+}
+
+async function refreshNotificationInbox() {
+    if (!inbox || inboxClearing) return;
+    var request = ++inboxRequest;
+    inboxContent.setAttribute('aria-busy', 'true');
+    inboxLoading.hidden = !inbox.open || inboxContent.hasChildNodes();
+    inboxError.hidden = true;
+
+    try {
+        var response = await fetch('/notifications/inbox', {cache: 'no-store'});
+        if (!response.ok) throw new Error('Notification inbox request failed');
+        var markup = await response.text();
+        if (request !== inboxRequest) return;
+
+        var count = Number(response.headers.get('X-Notification-Count'));
+        inboxContent.innerHTML = markup;
+        localizeVideoSchedules(inboxContent);
+        inboxClear.hidden = count === 0;
+        publishNotificationCount(count);
+    } catch {
+        if (request === inboxRequest) inboxError.hidden = false;
+    } finally {
+        if (request === inboxRequest) {
+            inboxLoading.hidden = true;
+            inboxContent.setAttribute('aria-busy', 'false');
+        }
+    }
+}
+
+if (inbox) {
+    var inboxToggle = document.getElementById('notification_ticker');
+    inbox.addEventListener('toggle', function () {
+        if (inbox.open) refreshNotificationInbox();
+    });
+
+    document.addEventListener('click', function (event) {
+        if (inbox.open && !inbox.contains(event.target)) inbox.open = false;
+    });
+
+    inbox.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && inbox.open) {
+            event.preventDefault();
+            inbox.open = false;
+            inboxToggle.focus();
+        }
+    });
+
+    inboxClear.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        if (inboxClearing) return;
+        inboxClearing = true;
+        ++inboxRequest;
+        var button = inboxClear.querySelector('button');
+        button.disabled = true;
+        inboxError.hidden = true;
+
+        try {
+            var response = await fetch(inboxClear.action, {
+                method: 'POST',
+                body: new URLSearchParams(new FormData(inboxClear))
+            });
+            if (!response.ok) throw new Error('Could not clear notifications');
+            publishNotificationCount(0);
+            if (inbox.contains(document.activeElement)) inboxToggle.focus();
+            inboxClearing = false;
+            await refreshNotificationInbox();
+        } catch {
+            inboxError.hidden = false;
+        } finally {
+            inboxClearing = false;
+            button.disabled = false;
+            inboxLoading.hidden = true;
+            inboxContent.setAttribute('aria-busy', 'false');
+        }
+    });
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) refreshNotificationInbox();
+    });
+
+    setInterval(function () {
+        if (inbox.open && !document.hidden) refreshNotificationInbox();
+    }, 30000);
+}
+
 function start_stream_if_needed() {
     // random wait for other tabs set 'stream' flag
     setTimeout(function () {
@@ -100,8 +194,10 @@ function start_stream_if_needed() {
 
 
 addEventListener('storage', function (e) {
-    if (e.key === STORAGE_KEY_NOTIF_COUNT)
+    if (e.key === STORAGE_KEY_NOTIF_COUNT) {
         update_ticker_count();
+        if (inbox && inbox.open) refreshNotificationInbox();
+    }
 
     // if 'stream' key was removed
     if (e.key === STORAGE_KEY_STREAM && !helpers.storage.get(STORAGE_KEY_STREAM)) {
@@ -117,7 +213,7 @@ addEventListener('storage', function (e) {
 addEventListener('load', function () {
     var notification_count_el = document.getElementById('notification_count');
     var notification_count = notification_count_el ? Number(notification_count_el.dataset.count) : 0;
-    helpers.storage.set(STORAGE_KEY_NOTIF_COUNT, notification_count);
+    publishNotificationCount(notification_count);
 
     if (helpers.storage.get(STORAGE_KEY_STREAM))
         helpers.storage.remove(STORAGE_KEY_STREAM);

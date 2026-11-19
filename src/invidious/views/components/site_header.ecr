@@ -26,12 +26,27 @@
             </a>
 
             <% if header_user && CONFIG.enable_user_notifications %>
-                <% notification_count = header_user.notifications.size %>
-                <a id="notification_ticker" href="/feed/subscriptions" class="site-icon-button site-notifications" title="<%= notifications_label %>">
-                    <span class="site-visually-hidden"><%= notifications_label %></span>
-                    <i class="icon <%= notification_count > 0 ? "ion-ios-notifications" : "ion-ios-notifications-outline" %>" aria-hidden="true"></i>
-                    <span id="notification_count" class="site-notification-badge" data-count="<%= notification_count %>" <%= "hidden" if notification_count == 0 %>><%= notification_count > 99 ? "99+" : notification_count.to_s %></span>
-                </a>
+                <% notification_count = header_user.notifications.uniq.size %>
+                <details class="notification-inbox" id="notification-inbox">
+                    <summary id="notification_ticker" class="site-icon-button site-notifications" title="<%= notifications_label %>" aria-controls="notification-inbox-panel">
+                        <span class="site-visually-hidden"><%= notifications_label %></span>
+                        <i class="icon <%= notification_count > 0 ? "ion-ios-notifications" : "ion-ios-notifications-outline" %>" aria-hidden="true"></i>
+                        <span id="notification_count" class="site-notification-badge" data-count="<%= notification_count %>" <%= "hidden" if notification_count == 0 %>><%= notification_count > 99 ? "99+" : notification_count.to_s %></span>
+                    </summary>
+                    <section class="notification-inbox-panel" id="notification-inbox-panel" aria-labelledby="notification-inbox-title">
+                        <div class="notification-inbox-heading">
+                            <h2 id="notification-inbox-title"><%= notifications_label %></h2>
+                            <form id="notification-inbox-clear" action="/notifications/clear" method="post" hidden>
+                                <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
+                                <button type="submit"><%= I18n.translate(locale, "notification_inbox_clear") %></button>
+                            </form>
+                        </div>
+                        <p id="notification-inbox-loading" class="notification-inbox-message" role="status" hidden><%= I18n.translate(locale, "notification_inbox_loading") %></p>
+                        <p id="notification-inbox-error" class="notification-inbox-message" role="alert" hidden><%= I18n.translate(locale, "notification_inbox_error") %></p>
+                        <div id="notification-inbox-content" aria-busy="false"></div>
+                        <a class="notification-inbox-feed" href="/feed/subscriptions"><%= I18n.translate(locale, "Subscriptions") %></a>
+                    </section>
+                </details>
             <% end %>
 
             <a href="/preferences?referer=<%= env.get?("current_page") %>" class="site-icon-button" title="<%= preferences_label %>" aria-label="<%= preferences_label %>">

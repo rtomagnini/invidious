@@ -1,4 +1,9 @@
 {
+    "notification_inbox_empty": "Nenhuma notificação não lida.",
+    "notification_inbox_clear": "Marcar tudo como lido",
+    "notification_inbox_loading": "Carregando notificações…",
+    "notification_inbox_error": "Não foi possível atualizar as notificações. Tente novamente.",
+    "notification_inbox_recent_only": "Mostrando as notificações não lidas mais recentes.",
     "history_empty": "Não há vídeos nesta parte do seu histórico.",
     "history_remove_video": "Remover do histórico",
     "history_remove_error": "Não foi possível remover o vídeo. Tente novamente.",

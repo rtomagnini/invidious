@@ -1,4 +1,9 @@
 {
+    "notification_inbox_empty": "No tienes avisos pendientes.",
+    "notification_inbox_clear": "Marcar todo como leído",
+    "notification_inbox_loading": "Cargando avisos…",
+    "notification_inbox_error": "No se pudieron actualizar los avisos. Inténtalo de nuevo.",
+    "notification_inbox_recent_only": "Se muestran los avisos pendientes más recientes.",
     "history_empty": "No hay vídeos en esta parte de tu historial.",
     "history_remove_video": "Quitar del historial",
     "history_remove_error": "No se pudo quitar el vídeo. Inténtalo de nuevo.",

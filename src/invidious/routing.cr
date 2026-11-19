@@ -39,6 +39,8 @@ module Invidious::Routing
 
       if CONFIG.enable_user_notifications
         get "/modify_notifications", Routes::Notifications, :modify
+        get "/notifications/inbox", Routes::Notifications, :inbox
+        post "/notifications/clear", Routes::Notifications, :clear_inbox
       end
     {% end %}
 

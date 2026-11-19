@@ -1,7 +1,7 @@
 'use strict';
 
-(function () {
-    var scheduledTimes = document.querySelectorAll('time[data-video-schedule]');
+function localizeVideoSchedules(root) {
+    var scheduledTimes = root.querySelectorAll('time[data-video-schedule]');
     if (scheduledTimes.length && window.Intl && Intl.DateTimeFormat) {
         var timeFormat = new Intl.DateTimeFormat(undefined, {
             weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
@@ -13,6 +13,10 @@
         });
     }
 
+}
+
+(function () {
+    localizeVideoSchedules(document);
     var video_player = document.getElementById('player_html5_api');
     if (video_player) {
         video_player.onmouseenter = function () { video_player['data-title'] = video_player['title']; video_player['title'] = ''; };

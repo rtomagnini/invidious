@@ -149,6 +149,24 @@ module Invidious::Database::Users
     PG_DB.exec(request, vid, user.email)
   end
 
+  def select_notification_inbox(user : User)
+    filter = Invidious::Database::SubscriptionFilters.allowed_sql("$1", "$2")
+
+    request = <<-SQL
+      SELECT cv.id, cv.title, cv.author, cv.live_now IS TRUE, cv.premiere_timestamp,
+        cv.is_livestream IS TRUE, count(*) OVER ()
+      FROM channel_videos cv
+      WHERE EXISTS (SELECT 1 FROM users WHERE email = $1
+        AND cv.id = ANY(notifications) AND cv.ucid = ANY(subscriptions))
+        AND #{filter}
+      ORDER BY cv.published DESC, cv.id
+      LIMIT 20
+      SQL
+
+    PG_DB.query_all(request, user.email, user.preferences.hide_shorts,
+      as: {String, String, String, Bool, Time?, Bool, Int64})
+  end
+
   def clear_notifications(user : User)
     request = <<-SQL
       UPDATE users

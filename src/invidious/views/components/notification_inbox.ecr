@@ -1,0 +1,31 @@
+<% if notification_rows.empty? %>
+    <p class="notification-inbox-message"><%= I18n.translate(locale, "notification_inbox_empty") %></p>
+<% else %>
+    <ul class="notification-inbox-items">
+        <% notification_rows.each do |id, title, author, live_now, starts_at, livestream, _| %>
+            <% scheduled_at = !live_now && starts_at && starts_at > Time.utc ? starts_at : nil %>
+            <li>
+                <a href="/watch?v=<%= URI.encode_www_form(id) %>" class="notification-inbox-item">
+                    <% unless thin_mode %>
+                        <img src="/vi/<%= URI.encode_www_form(id) %>/mqdefault.jpg" alt="" width="80" height="45" loading="lazy" decoding="async">
+                    <% end %>
+                    <span class="notification-inbox-copy">
+                        <strong dir="auto"><%= HTML.escape(title) %></strong>
+                        <span class="notification-inbox-channel" dir="auto"><%= HTML.escape(author) %></span>
+                        <% if live_now %>
+                            <span class="notification-inbox-live"><%= I18n.translate(locale, "LIVE") %></span>
+                        <% elsif scheduled_at %>
+                            <span class="notification-inbox-schedule">
+                                <%= I18n.translate(locale, livestream ? "video_card_scheduled_live" : "video_card_scheduled") %>
+                                <time data-video-schedule datetime="<%= scheduled_at.to_utc.to_rfc3339 %>"><%= scheduled_at.to_utc.to_s("%Y-%m-%d %H:%M UTC") %></time>
+                            </span>
+                        <% end %>
+                    </span>
+                </a>
+            </li>
+        <% end %>
+    </ul>
+    <% if notification_count > notification_rows.size %>
+        <p class="notification-inbox-message"><%= I18n.translate(locale, "notification_inbox_recent_only") %></p>
+    <% end %>
+<% end %>

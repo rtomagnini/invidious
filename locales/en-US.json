@@ -1,4 +1,9 @@
 {
+    "notification_inbox_empty": "No unread notifications.",
+    "notification_inbox_clear": "Mark all as read",
+    "notification_inbox_loading": "Loading notifications…",
+    "notification_inbox_error": "Could not update notifications. Try again.",
+    "notification_inbox_recent_only": "Showing the most recent unread notifications.",
     "history_empty": "No videos in this part of your history.",
     "history_remove_video": "Remove from watch history",
     "history_remove_error": "Could not remove the video. Try again.",

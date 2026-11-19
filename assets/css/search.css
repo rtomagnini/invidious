@@ -1,6 +1,13 @@
 .search-results {
   margin: 0 .65rem 1.25rem;
   color: var(--site-ink);
+  color-scheme: light;
+}
+
+.dark-theme .search-results { color-scheme: dark; }
+
+@media (prefers-color-scheme: dark) {
+  .no-theme .search-results { color-scheme: dark; }
 }
 
 .search-results-header {
@@ -115,7 +122,7 @@
   font-weight: 600;
 }
 
-.search-filter-select select {
+.search-results .search-filter-select select {
   box-sizing: border-box;
   width: 100%;
   min-height: 2.4rem;
@@ -129,7 +136,7 @@
   cursor: pointer;
 }
 
-.search-filter-select option { background: var(--site-surface); color: var(--site-ink); }
+.search-results .search-filter-select option { background: var(--site-surface); color: var(--site-ink); }
 
 .search-filter-advanced {
   margin-top: .75rem;

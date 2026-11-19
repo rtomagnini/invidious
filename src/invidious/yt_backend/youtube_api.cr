@@ -293,6 +293,9 @@ module YoutubeAPI
     client_context = {
       "client" => {
         "hl"            => "en",
+        # The browse endpoint formats scheduled broadcasts in the client time zone.
+        "timeZone"         => "UTC",
+        "utcOffsetMinutes" => 0_i64,
         "gl"            => client_config.region || "US", # Can't be empty!
         "clientName"    => client_config.name,
         "clientVersion" => client_config.version,

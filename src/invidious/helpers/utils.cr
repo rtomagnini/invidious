@@ -104,7 +104,7 @@ def decode_date(string : String)
   # Raw: "Premieres 6/29/27, 9:00 PM"
   begin
     string2 = string.lchop("Premieres ").gsub('\u202F', " ")
-    return Time.parse(string2, "%m/%d/%y, %l:%M %p", Time::Location.local)
+    return Time.parse(string2, "%m/%d/%y, %l:%M %p", Time::Location::UTC)
   rescue
   end
 

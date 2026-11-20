@@ -26,14 +26,12 @@ module Invidious::Routes::Feeds
   end
 
   def self.popular(env)
-    locale = env.get("preferences").as(Preferences).locale
+    preferences = env.get("preferences").as(Preferences)
+    locale = preferences.locale
+    videos = CONFIG.popular_enabled ? popular_videos : [] of ChannelVideo
+    videos = videos.reject { |video| video.is_short == true } if preferences.hide_shorts
 
-    if CONFIG.popular_enabled
-      templated "feeds/popular"
-    else
-      message = I18n.translate(locale, "The Popular feed has been disabled by the administrator.")
-      templated "message"
-    end
+    templated "feeds/popular"
   end
 
   def self.trending(env)

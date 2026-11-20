@@ -7,11 +7,12 @@
         Invidious
     <% end %>
 </title>
+<link rel="stylesheet" href="/css/discovery.css?v=<%= ASSET_COMMIT %>">
 <link rel="stylesheet" href="/css/trending.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<main class="trending-page" aria-labelledby="trending-title">
-    <header class="trending-header">
+<main class="discovery-page trending-page" aria-labelledby="trending-title">
+    <header class="discovery-header">
         <h1 id="trending-title"><%= I18n.translate(locale, "Trending") %></h1>
         <div class="trending-controls">
             <nav class="trending-categories" aria-label="<%= HTML.escape(I18n.translate(locale, "trending_categories")) %>">
@@ -42,7 +43,7 @@
     </header>
 
     <% if trending.empty? %>
-        <p class="trending-empty"><%= I18n.translate(locale, "trending_empty") %></p>
+        <p class="discovery-empty"><%= I18n.translate(locale, "trending_empty") %></p>
     <% else %>
         <div class="pure-g">
             <% trending.each do |item| %>

@@ -1,4 +1,5 @@
 {
+    "popular_empty": "No popular videos are available right now.",
     "feedback_watched": "Marked as watched.",
     "feedback_unwatched": "Removed from watch history.",
     "feedback_undo": "Undo",

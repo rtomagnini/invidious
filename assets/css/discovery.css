@@ -1,0 +1,77 @@
+.discovery-page {
+  margin: 0 .65rem 1.25rem;
+  color: var(--site-ink);
+}
+
+.discovery-header,
+.discovery-empty {
+  margin: 0 .5rem .8rem;
+  padding: .95rem 1rem;
+  border: 1px solid var(--site-line);
+  border-radius: .9rem;
+  background: var(--site-surface);
+}
+
+.discovery-header h1 {
+  margin: 0;
+  font-size: clamp(1.45rem, 3vw, 1.95rem);
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+
+.discovery-header-row,
+.discovery-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .65rem;
+}
+
+.discovery-header-row { justify-content: space-between; }
+.discovery-identity { flex-wrap: nowrap; min-width: 0; }
+
+.discovery-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: .65rem;
+  color: var(--site-accent);
+  background: var(--site-selected);
+  font-size: 1.2rem;
+  font-weight: 650;
+}
+
+.discovery-empty {
+  border-style: dashed;
+  color: var(--site-muted);
+  text-align: center;
+}
+
+.discovery-page .discovery-action,
+.discovery-page .page-nav-container a {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  box-sizing: border-box;
+  min-height: 2.25rem;
+  padding: .35rem .65rem;
+  border: 1px solid var(--site-line);
+  border-radius: .5rem;
+  color: var(--site-ink);
+  background: var(--site-surface);
+  font-size: .875rem;
+}
+
+.discovery-page .discovery-action:hover,
+.discovery-page .page-nav-container a:hover { background: var(--site-hover); }
+
+.discovery-page :is(a, select, button):focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 42rem) {
+  .discovery-page { margin-inline: .2rem; }
+}

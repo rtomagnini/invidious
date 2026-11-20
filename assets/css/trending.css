@@ -1,6 +1,4 @@
 .trending-page {
-  margin: 0 .65rem 1.25rem;
-  color: var(--site-ink);
   color-scheme: light;
 }
 
@@ -10,19 +8,7 @@
   .no-theme .trending-page { color-scheme: dark; }
 }
 
-.trending-header {
-  margin: 0 .5rem .8rem;
-  padding: .95rem 1rem;
-  border: 1px solid var(--site-line);
-  border-radius: .9rem;
-  background: var(--site-surface);
-}
-
-.trending-header h1 {
-  margin: 0 0 .75rem;
-  font-size: clamp(1.45rem, 3vw, 1.95rem);
-  letter-spacing: -.035em;
-}
+.trending-page .discovery-header h1 { margin-bottom: .75rem; }
 
 .trending-controls,
 .trending-categories,
@@ -103,21 +89,6 @@
   color: var(--site-accent);
 }
 
-.trending-page :is(a, select, button):focus-visible {
-  outline: 2px solid var(--site-accent);
-  outline-offset: 2px;
-}
-
-.trending-empty {
-  margin: .6rem .5rem;
-  padding: 1rem;
-  border: 1px dashed var(--site-line);
-  border-radius: .75rem;
-  color: var(--site-muted);
-  text-align: center;
-}
-
 @media (max-width: 42rem) {
-  .trending-page { margin-inline: .2rem; }
   .trending-region-form { margin-inline-start: 0; }
 }

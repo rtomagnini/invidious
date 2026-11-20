@@ -1,8 +1,26 @@
+<% hashtag_title = HTML.escape("##{hashtag}") %>
 <% content_for "header" do %>
-<title><%= HTML.escape(hashtag) %> - Invidious</title>
+<title><%= hashtag_title %> - Invidious</title>
+<link rel="stylesheet" href="/css/discovery.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<hr/>
+<main class="discovery-page" aria-labelledby="hashtag-title">
+    <header class="discovery-header discovery-header-row">
+        <div class="discovery-identity">
+            <span class="discovery-icon" aria-hidden="true"><i class="icon ion-md-pricetag"></i></span>
+            <h1 id="hashtag-title" dir="auto"><%= hashtag_title %></h1>
+        </div>
+        <a class="discovery-action" href="/search?q=<%= URI.encode_www_form(hashtag) %>">
+            <i class="icon ion-ios-search" aria-hidden="true"></i> <%= I18n.translate(locale, "Search") %>
+        </a>
+    </header>
 
-
-<%= rendered "components/items_paginated" %>
+    <% if items.empty? %>
+        <p class="discovery-empty"><%= I18n.translate(locale, "hashtag_empty") %></p>
+        <% if page > 1 || show_next %>
+            <%= page_nav_html %>
+        <% end %>
+    <% else %>
+        <%= rendered "components/items_paginated" %>
+    <% end %>
+</main>

@@ -105,13 +105,7 @@ module Invidious::Routes::Search
       return Errors.error_template(400, "Invalid request")
     end
 
-    page = env.params.query["page"]?
-    if page.nil?
-      page = 1
-    else
-      page = Math.max(1, page.to_i)
-      env.params.query.delete_all("page")
-    end
+    page = (env.params.query["page"]?.try(&.to_i?) || 1).clamp(1, Int32::MAX // 60)
 
     begin
       items = Invidious::Search::Hashtag.fetch_hashtag(hashtag, page)

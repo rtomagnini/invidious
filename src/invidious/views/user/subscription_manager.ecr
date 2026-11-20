@@ -68,21 +68,22 @@
 
                     <details class="subscription-filter">
                         <summary><i class="icon ion-ios-options" aria-hidden="true"></i> <%= I18n.translate(locale, "subscription_manager_edit_filter") %><i class="icon ion-ios-arrow-down subscription-chevron" aria-hidden="true"></i></summary>
-                        <form method="post" action="/subscription_ajax?action=save_filter&amp;c=<%= channel.id %>">
+                        <form data-subscription-filter
+                              data-inherit="<%= HTML.escape(I18n.translate(locale, "subscription_filter_inherit")) %>"
+                              data-empty="<%= HTML.escape(I18n.translate(locale, "subscription_filter_empty")) %>"
+                              method="post" action="/subscription_ajax?action=save_filter&amp;c=<%= channel.id %>">
                             <input type="hidden" name="csrf_token" value="<%= csrf_token %>">
                             <fieldset>
                                 <legend><%= I18n.translate(locale, "subscription_filter_feed_types") %></legend>
                                 <% options.each do |name, code| %>
                                     <label>
                                         <span><%= I18n.translate(locale, "subscription_filter_#{name}") %></span>
-                                        <input type="checkbox" class="site-switch" name="filter_<%= name %>" <%= "checked" if selected.includes?(code) %>>
+                                        <input type="checkbox" class="site-switch" name="filter_<%= name %>" data-type="<%= code %>" <%= "checked" if selected.includes?(code) %>>
                                     </label>
                                 <% end %>
                                 <div class="subscription-filter-actions">
                                     <button class="subscription-save" type="submit" name="filter_mode" value="custom"><%= I18n.translate(locale, "subscription_filter_save") %></button>
-                                    <% if types %>
-                                        <button type="submit" name="filter_mode" value="inherit"><%= I18n.translate(locale, "subscription_filter_inherit") %></button>
-                                    <% end %>
+                                    <button type="submit" name="filter_mode" value="inherit"<%= " hidden" unless types %>><%= I18n.translate(locale, "subscription_filter_inherit") %></button>
                                 </div>
                             </fieldset>
                         </form>

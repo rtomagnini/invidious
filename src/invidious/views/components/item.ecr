@@ -154,10 +154,9 @@
 
                 <div class="top-left-overlay">
                     <%- if env.get? "show_watched" -%>
-                        <form data-onsubmit="return_false" action="/watch_ajax?action=mark_watched&id=<%= item.id %>&referer=<%= env.get("current_page") %>" method="post">
+                        <form data-feedback-submit="watched" action="/watch_ajax?action=mark_watched&id=<%= item.id %>&referer=<%= env.get("current_page") %>" method="post">
                             <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
-                            <button type="submit" class="pure-button pure-button-secondary low-profile"
-                                    data-onclick="mark_watched" data-id="<%= item.id %>" title="<%= mark_watched_label %>" aria-label="<%= mark_watched_label %>">
+                            <button type="submit" class="pure-button pure-button-secondary low-profile"  title="<%= mark_watched_label %>" aria-label="<%= mark_watched_label %>">
                                 <i data-mouse="switch_classes" data-switch-classes="ion-ios-eye-off,ion-ios-eye" class="icon ion-ios-eye"></i>
                             </button>
                         </form>
@@ -165,19 +164,17 @@
 
                     <%- if plid_form = env.get?("add_playlist_items") -%>
                         <%- form_parameters = "action=add_video&video_id=#{item.id}&playlist_id=#{plid_form}&referer=#{env.get("current_page")}" -%>
-                        <form data-onsubmit="return_false" action="/playlist_ajax?<%= form_parameters %>" method="post">
+                        <form data-feedback-submit="playlistAdded" action="/playlist_ajax?<%= form_parameters %>" method="post">
                             <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
                             <button type="submit" class="pure-button pure-button-secondary low-profile"
-                                    aria-label="<%= HTML.escape(I18n.translate(locale, "playlist_button_add_items")) %>"
-                                    data-onclick="add_playlist_item" data-id="<%= item.id %>" data-plid="<%= plid_form %>"><i class="icon ion-md-add"></i></button>
+                                    aria-label="<%= HTML.escape(I18n.translate(locale, "playlist_button_add_items")) %>"><i class="icon ion-md-add"></i></button>
                         </form>
                     <%- elsif item.is_a?(PlaylistVideo) && (plid_form = env.get?("remove_playlist_items")) -%>
                         <%- form_parameters = "action=remove_video&set_video_id=#{item.index}&playlist_id=#{plid_form}&referer=#{env.get("current_page")}" -%>
-                        <form data-onsubmit="return_false" action="/playlist_ajax?<%= form_parameters %>" method="post">
+                        <form data-feedback-submit="playlistRemoved" action="/playlist_ajax?<%= form_parameters %>" method="post">
                             <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
                             <button type="submit" class="pure-button pure-button-secondary low-profile"
-                                    aria-label="<%= HTML.escape(I18n.translate(locale, "playlist_remove_item")) %>"
-                                    data-onclick="remove_playlist_item" data-index="<%= item.index %>" data-plid="<%= plid_form %>"><i class="icon ion-md-trash"></i></button>
+                                    aria-label="<%= HTML.escape(I18n.translate(locale, "playlist_remove_item")) %>"><i class="icon ion-md-trash"></i></button>
                         </form>
                     <%- end -%>
                 </div>

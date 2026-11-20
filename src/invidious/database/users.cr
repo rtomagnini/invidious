@@ -49,14 +49,14 @@ module Invidious::Database::Users
     PG_DB.exec(request, user.watched, user.email)
   end
 
-  def mark_watched(user : User, vid : String)
+  def mark_watched(user : User, vid : String, only_if_new : Bool = false)
     request = <<-SQL
       UPDATE users
       SET watched = array_append(array_remove(watched, $1), $1)
-      WHERE email = $2
+      WHERE email = $2 AND (NOT $3::boolean OR array_position(watched, $1) IS NULL)
       SQL
 
-    PG_DB.exec(request, vid, user.email)
+    PG_DB.exec(request, vid, user.email, only_if_new)
   end
 
   def mark_unwatched(user : User, vid : String)

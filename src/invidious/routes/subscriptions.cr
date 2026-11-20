@@ -45,7 +45,10 @@ module Invidious::Routes::Subscriptions
       Invidious::Database::Users.unsubscribe_channel(user, channel_id)
     when "save_filter"
       unless user.subscriptions.includes?(channel_id)
-        return Errors.error_template(400, I18n.translate(locale, "subscription_filter_invalid"))
+        if redirect
+          return Errors.error_template(400, "subscription_filter_invalid")
+        end
+        return Errors.error_json(400, I18n.translate(locale, "subscription_filter_invalid"))
       end
 
       if env.params.body["filter_mode"]? == "inherit"
@@ -59,7 +62,14 @@ module Invidious::Routes::Subscriptions
         Invidious::Database::SubscriptionFilters.save(user.email, channel_id, types)
       end
 
-      return env.redirect "/subscription_manager"
+      if redirect
+        Invidious::User::Cookies.set_feedback(env, "feedback_filter_saved")
+        return env.redirect "/subscription_manager"
+      end
+
+      env.response.content_type = "application/json"
+      selected = types || (user.preferences.hide_shorts ? "vl" : "vsl")
+      return {"custom" => !types.nil?, "selected" => selected}.to_json
     else
       return Errors.error_json(400, "Unsupported action #{action}")
     end

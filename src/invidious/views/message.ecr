@@ -1,10 +1,16 @@
 <% content_for "header" do %>
-<meta name="description" content="<%= I18n.translate(locale, "An alternative front-end to YouTube") %>">
-<title>
-    Invidious
-</title>
+<title><%= I18n.translate(locale, "feedback_notice_title") %> - Invidious</title>
+<link rel="stylesheet" href="/css/error-page.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 
-<p>
-    <%= message %>
-</p>
+<main class="problem-page" aria-labelledby="notice-title">
+    <div class="problem-card">
+        <span class="problem-icon" aria-hidden="true"><i class="icon ion-ios-information-circle"></i></span>
+        <h1 id="notice-title"><%= I18n.translate(locale, "feedback_notice_title") %></h1>
+        <p class="problem-message"><%= HTML.escape(message) %></p>
+        <div class="problem-actions">
+            <a href="/search"><%= I18n.translate(locale, "Search") %></a>
+            <a href="/"><%= I18n.translate(locale, "error_home") %></a>
+        </div>
+    </div>
+</main>

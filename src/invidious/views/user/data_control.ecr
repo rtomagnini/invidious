@@ -18,35 +18,59 @@
     <div class="account-columns">
         <section class="account-panel" aria-labelledby="import-title">
             <h2 id="import-title"><%= I18n.translate(locale, "Import") %></h2>
+            <% if import_notice %>
+                <p class="feedback-error" role="alert"><%= I18n.translate(locale, import_notice) %></p>
+            <% end %>
             <form class="account-form" enctype="multipart/form-data" action="/data_control?referer=<%= URI.encode_www_form(referer) %>" method="post">
                 <div class="account-field">
                     <label for="import_invidious"><%= I18n.translate(locale, "Import Invidious data") %></label>
-                    <input type="file" id="import_invidious" name="import_invidious">
+                    <input type="file" id="import_invidious" name="import_invidious"<%= %( aria-invalid="true" aria-describedby="import-file-error") if import_error_field == "import_invidious" %>>
+                    <% if import_error_field == "import_invidious" %>
+                        <p id="import-file-error" class="feedback-error" role="alert"><%= I18n.translate(locale, "feedback_import_invalid") %></p>
+                    <% end %>
                 </div>
                 <div class="account-field">
                     <label for="import_youtube"><%= I18n.translate(locale, "Import YouTube subscriptions") %></label>
                     <a class="account-help" rel="noopener noreferrer" target="_blank" href="https://github.com/iv-org/documentation/blob/master/docs/export-youtube-subscriptions.md"><%= I18n.translate(locale, "account_youtube_export_help") %></a>
-                    <input type="file" id="import_youtube" name="import_youtube">
+                    <input type="file" id="import_youtube" name="import_youtube"<%= %( aria-invalid="true" aria-describedby="import-file-error") if import_error_field == "import_youtube" %>>
+                    <% if import_error_field == "import_youtube" %>
+                        <p id="import-file-error" class="feedback-error" role="alert"><%= I18n.translate(locale, "feedback_import_invalid") %></p>
+                    <% end %>
                 </div>
                 <div class="account-field">
                     <label for="import_youtube_pl"><%= I18n.translate(locale, "Import YouTube playlist (.csv)") %></label>
-                    <input type="file" id="import_youtube_pl" name="import_youtube_pl">
+                    <input type="file" id="import_youtube_pl" name="import_youtube_pl"<%= %( aria-invalid="true" aria-describedby="import-file-error") if import_error_field == "import_youtube_pl" %>>
+                    <% if import_error_field == "import_youtube_pl" %>
+                        <p id="import-file-error" class="feedback-error" role="alert"><%= I18n.translate(locale, "feedback_import_invalid") %></p>
+                    <% end %>
                 </div>
                 <div class="account-field">
                     <label for="import_youtube_wh"><%= I18n.translate(locale, "Import YouTube watch history (.json)") %></label>
-                    <input type="file" id="import_youtube_wh" name="import_youtube_wh">
+                    <input type="file" id="import_youtube_wh" name="import_youtube_wh"<%= %( aria-invalid="true" aria-describedby="import-file-error") if import_error_field == "import_youtube_wh" %>>
+                    <% if import_error_field == "import_youtube_wh" %>
+                        <p id="import-file-error" class="feedback-error" role="alert"><%= I18n.translate(locale, "feedback_import_invalid") %></p>
+                    <% end %>
                 </div>
                 <div class="account-field">
                     <label for="import_freetube"><%= I18n.translate(locale, "Import FreeTube subscriptions (.db)") %></label>
-                    <input type="file" id="import_freetube" name="import_freetube">
+                    <input type="file" id="import_freetube" name="import_freetube"<%= %( aria-invalid="true" aria-describedby="import-file-error") if import_error_field == "import_freetube" %>>
+                    <% if import_error_field == "import_freetube" %>
+                        <p id="import-file-error" class="feedback-error" role="alert"><%= I18n.translate(locale, "feedback_import_invalid") %></p>
+                    <% end %>
                 </div>
                 <div class="account-field">
                     <label for="import_newpipe_subscriptions"><%= I18n.translate(locale, "Import NewPipe subscriptions (.json)") %></label>
-                    <input type="file" id="import_newpipe_subscriptions" name="import_newpipe_subscriptions">
+                    <input type="file" id="import_newpipe_subscriptions" name="import_newpipe_subscriptions"<%= %( aria-invalid="true" aria-describedby="import-file-error") if import_error_field == "import_newpipe_subscriptions" %>>
+                    <% if import_error_field == "import_newpipe_subscriptions" %>
+                        <p id="import-file-error" class="feedback-error" role="alert"><%= I18n.translate(locale, "feedback_import_invalid") %></p>
+                    <% end %>
                 </div>
                 <div class="account-field">
                     <label for="import_newpipe"><%= I18n.translate(locale, "Import NewPipe data (.zip)") %></label>
-                    <input type="file" id="import_newpipe" name="import_newpipe">
+                    <input type="file" id="import_newpipe" name="import_newpipe"<%= %( aria-invalid="true" aria-describedby="import-file-error") if import_error_field == "import_newpipe" %>>
+                    <% if import_error_field == "import_newpipe" %>
+                        <p id="import-file-error" class="feedback-error" role="alert"><%= I18n.translate(locale, "feedback_import_invalid") %></p>
+                    <% end %>
                 </div>
                 <div class="account-actions">
                     <button type="submit" class="account-button account-primary"><%= I18n.translate(locale, "Import") %></button>

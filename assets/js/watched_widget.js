@@ -1,21 +1,4 @@
 'use strict';
-var watchedDataElement = document.getElementById('watched_data');
-var payload = watchedDataElement ? 'csrf_token=' + JSON.parse(watchedDataElement.textContent).csrf_token : '';
-
-function mark_watched(target) {
-    var tile = target.parentNode.parentNode.parentNode.parentNode.parentNode;
-    tile.style.display = 'none';
-
-    var url = '/watch_ajax?action=mark_watched&redirect=false' +
-        '&id=' + target.getAttribute('data-id');
-
-    helpers.xhr('POST', url, {payload: payload}, {
-        onNon200: function (xhr) {
-            tile.style.display = '';
-        }
-    });
-}
-
 function mark_unwatched(target) {
     var tile = target.closest('.history-card-cell');
     var form = target.form;
@@ -36,6 +19,7 @@ function mark_unwatched(target) {
 
     helpers.xhr('POST', url.href, {payload: new URLSearchParams(new FormData(form)).toString()}, {
         on200: function () {
+            feedback.toast('unwatched');
             var remaining = Math.max(0, Number(count.dataset.count) - 1);
             var returnFocus = document.activeElement === target || document.activeElement === document.body;
             tile.remove();

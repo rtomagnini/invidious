@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="/css/ionicons.min.css?v=<%= ASSET_COMMIT %>">
     <link rel="stylesheet" href="/css/default.css?v=<%= ASSET_COMMIT %>">
     <link rel="stylesheet" href="/css/site-header.css?v=<%= ASSET_COMMIT %>">
+    <link rel="stylesheet" href="/css/feedback.css?v=<%= ASSET_COMMIT %>">
     <link rel="stylesheet" href="/css/video-card.css?v=<%= ASSET_COMMIT %>">
     <link rel="stylesheet" href="/css/carousel.css?v=<%= ASSET_COMMIT %>">
     <script src="/js/_helpers.js?v=<%= ASSET_COMMIT %>"></script>
@@ -40,6 +41,10 @@
                 <div class="h-box">
                     <h3><%= CONFIG.banner %></h3>
                 </div>
+            <% end %>
+
+            <% if notice = Invidious::User::Cookies.take_feedback(env) %>
+                <p class="feedback-notice" role="status"><%= I18n.translate(locale, notice) %></p>
             <% end %>
 
             <%= content %>
@@ -58,6 +63,8 @@
 
         </div>
     </div>
+    <%= rendered "components/feedback" %>
+    <script src="/js/feedback.js?v=<%= ASSET_COMMIT %>"></script>
     <script src="/js/handlers.js?v=<%= ASSET_COMMIT %>"></script>
     <script src="/js/themes.js?v=<%= ASSET_COMMIT %>"></script>
     <% if env.get? "user" %>

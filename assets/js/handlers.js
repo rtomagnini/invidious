@@ -73,20 +73,8 @@ function localizeVideoSchedules(root) {
         el.onsubmit = function () { return false; };
     });
 
-    document.querySelectorAll('[data-onclick="mark_watched"]').forEach(function (el) {
-        el.onclick = function () { mark_watched(el); };
-    });
     document.querySelectorAll('[data-onclick="mark_unwatched"]').forEach(function (el) {
         el.onclick = function () { return mark_unwatched(el); };
-    });
-    document.querySelectorAll('[data-onclick="add_playlist_video"]').forEach(function (el) {
-        el.onclick = function () { add_playlist_video(el); };
-    });
-    document.querySelectorAll('[data-onclick="add_playlist_item"]').forEach(function (el) {
-        el.onclick = function () { add_playlist_item(el); };
-    });
-    document.querySelectorAll('[data-onclick="remove_playlist_item"]').forEach(function (el) {
-        el.onclick = function () { remove_playlist_item(el); };
     });
     document.querySelectorAll('[data-onclick="notification_requestPermission"]').forEach(function (el) {
         el.onclick = function () { Notification.requestPermission(); };

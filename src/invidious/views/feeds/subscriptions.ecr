@@ -24,16 +24,6 @@
     </section>
 <% end %>
 
-<script id="watched_data" type="application/json">
-<%=
-{
-    "csrf_token" => URI.encode_www_form(env.get?("csrf_token").try &.as(String) || "")
-}.to_pretty_json
-%>
-</script>
-<script src="/js/watched_widget.js?v=<%= ASSET_COMMIT %>"></script>
-
-
 <div class="pure-g">
 <% videos.each do |item| %>
     <%= rendered "components/item" %>

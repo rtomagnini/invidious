@@ -29,6 +29,26 @@ struct Invidious::User
       )
     end
 
+    FEEDBACK_KEYS = {"feedback_history_cleared", "feedback_account_deleted", "feedback_filter_saved",
+                     "feedback_watched", "feedback_unwatched", "feedback_playlist_added", "feedback_playlist_removed", "feedback_imported"}
+
+    def set_feedback(env, key : String)
+      env.response.cookies << feedback_cookie(key, Time.utc + 2.minutes)
+    end
+
+    def take_feedback(env) : String?
+      if cookie = env.request.cookies["IV_FEEDBACK"]?
+        env.response.cookies << feedback_cookie("", Time.utc(1990, 1, 1))
+        env.response.headers["Cache-Control"] = "no-store"
+        return cookie.value if FEEDBACK_KEYS.includes?(cookie.value)
+      end
+    end
+
+    private def feedback_cookie(value, expires)
+      HTTP::Cookie.new(name: "IV_FEEDBACK", value: value, expires: expires, path: "/",
+        secure: @@secure, http_only: true, samesite: HTTP::Cookie::SameSite::Lax)
+    end
+
     # Preferences (PREFS) cookie
     # Parameter "domain" comes from the global config
     def prefs(domain : String?, preferences : Preferences) : HTTP::Cookie

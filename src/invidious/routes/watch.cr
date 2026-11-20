@@ -236,9 +236,10 @@ module Invidious::Routes::Watch
       end
     end
 
+    changed = false
     case action = env.params.query["action"]?
     when "mark_watched"
-      Invidious::Database::Users.mark_watched(user, id)
+      changed = Invidious::Database::Users.mark_watched(user, id, only_if_new: true).rows_affected > 0
     when "mark_unwatched"
       Invidious::Database::Users.mark_unwatched(user, id)
     else
@@ -246,10 +247,12 @@ module Invidious::Routes::Watch
     end
 
     if redirect
+      notice = action == "mark_watched" ? "feedback_watched" : "feedback_unwatched"
+      Invidious::User::Cookies.set_feedback(env, notice)
       env.redirect referer
     else
       env.response.content_type = "application/json"
-      "{}"
+      {"changed" => changed}.to_json
     end
   end
 

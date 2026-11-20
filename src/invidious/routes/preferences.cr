@@ -300,75 +300,82 @@ module Invidious::Routes::PreferencesRoute
       return env.redirect referer
     end
 
-    user = user.as(User)
-
+    import_notice = nil
+    import_error_field = nil
     templated "user/data_control"
   end
 
   def self.update_data_control(env)
     locale = env.get("preferences").as(Preferences).locale
-
-    user = env.get? "user"
+    user = env.get?("user").try &.as(User)
     referer = get_referer(env)
+    return env.redirect referer unless user
 
-    if user
-      user = user.as(User)
+    import_notice = nil
+    import_error_field = nil
+    imported = false
 
-      # TODO: Find a way to prevent browser timeout
-
+    begin
       HTTP::FormData.parse(env.request) do |part|
-        body = part.body.gets_to_end
-        type = part.headers["Content-Type"]
+        next if import_error_field
 
+        body = part.body.gets_to_end
         next if body.empty?
 
-        # TODO: Unify into single import based on content-type
-        case part.name
-        when "import_invidious"
-          Invidious::User::Import.from_invidious(user, body)
-        when "import_youtube"
-          filename = part.filename || ""
-          success = Invidious::User::Import.from_youtube(user, body, filename, type)
+        type = part.headers["Content-Type"]? || ""
+        filename = part.filename || ""
 
-          if !success
-            haltf(env, status_code: 415,
-              response: Errors.error_template(415, "Invalid subscription file uploaded")
-            )
-          end
-        when "import_youtube_pl"
-          filename = part.filename || ""
-          success = Invidious::User::Import.from_youtube_pl(user, body, filename, type)
+        begin
+          success = case part.name
+                    when "import_invidious"
+                      Invidious::User::Import.from_invidious(user, body)
+                      true
+                    when "import_youtube"
+                      Invidious::User::Import.from_youtube(user, body, filename, type)
+                    when "import_youtube_pl"
+                      Invidious::User::Import.from_youtube_pl(user, body, filename, type)
+                    when "import_youtube_wh"
+                      Invidious::User::Import.from_youtube_wh(user, body, filename, type)
+                    when "import_freetube"
+                      Invidious::User::Import.from_freetube(user, body)
+                      true
+                    when "import_newpipe_subscriptions"
+                      Invidious::User::Import.from_newpipe_subs(user, body)
+                      true
+                    when "import_newpipe"
+                      Invidious::User::Import.from_newpipe(user, body)
+                    else
+                      next
+                    end
 
-          if !success
-            haltf(env, status_code: 415,
-              response: Errors.error_template(415, "Invalid playlist file uploaded")
-            )
+          if success
+            imported = true
+          else
+            import_error_field = part.name
           end
-        when "import_youtube_wh"
-          filename = part.filename || ""
-          success = Invidious::User::Import.from_youtube_wh(user, body, filename, type)
-
-          if !success
-            haltf(env, status_code: 415,
-              response: Errors.error_template(415, "Invalid watch history file uploaded")
-            )
-          end
-        when "import_freetube"
-          Invidious::User::Import.from_freetube(user, body)
-        when "import_newpipe_subscriptions"
-          Invidious::User::Import.from_newpipe_subs(user, body)
-        when "import_newpipe"
-          success = Invidious::User::Import.from_newpipe(user, body)
-
-          if !success
-            haltf(env, status_code: 415,
-              response: Errors.error_template(415, "Uploaded file is too large")
-            )
-          end
+        rescue ex : JSON::ParseException | XML::Error | Compress::Zip::Error | InfoException | KeyError | TypeCastError
+          LOGGER.warn("Data import rejected (#{ex.class})")
+          import_error_field = part.name
         end
       end
+
+      if import_error_field
+        env.response.status_code = 415
+        import_notice = "feedback_import_failed" if imported
+      elsif !imported
+        env.response.status_code = 400
+        import_notice = "feedback_import_empty"
+      else
+        Invidious::User::Cookies.set_feedback(env, "feedback_imported")
+        return env.redirect referer
+      end
+    rescue ex
+      LOGGER.warn("Data import could not finish (#{ex.class})")
+      env.response.status_code = 500
+      import_notice = "feedback_import_failed"
     end
 
-    env.redirect referer
+    env.response.content_type = "text/html"
+    templated "user/data_control"
   end
 end

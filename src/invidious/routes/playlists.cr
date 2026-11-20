@@ -305,7 +305,7 @@ module Invidious::Routes::Playlists
     end
 
     begin
-      playlist_id = env.params.query["playlist_id"]
+      playlist_id = env.params.query["playlist_id"]? || env.params.body["playlist_id"]
       playlist = Invidious::Playlists::Playlists.get_playlist(playlist_id).as(InvidiousPlaylist)
       raise "Invalid user" if playlist.author != user.email
     rescue ex : NotFoundException
@@ -328,7 +328,7 @@ module Invidious::Routes::Playlists
         end
       end
 
-      video_id = env.params.query["video_id"]
+      video_id = env.params.query["video_id"]? || env.params.body["video_id"]
 
       begin
         video = get_video(video_id)
@@ -373,6 +373,10 @@ module Invidious::Routes::Playlists
     end
 
     if redirect
+      if action == "add_video" || action == "remove_video"
+        notice = action == "add_video" ? "feedback_playlist_added" : "feedback_playlist_removed"
+        Invidious::User::Cookies.set_feedback(env, notice)
+      end
       env.redirect referer
     else
       env.response.content_type = "application/json"

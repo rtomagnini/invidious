@@ -208,7 +208,7 @@
                     <% if user %>
                         <% playlists = Invidious::Database::Playlists.select_user_created_playlists(user.email) %>
                         <% if !playlists.empty? %>
-                            <form data-onsubmit="return_false" class="pure-form pure-form-stacked" action="/playlist_ajax?action=add_video" method="post" target="_blank">
+                            <form data-feedback-submit="playlistAdded" class="pure-form pure-form-stacked" action="/playlist_ajax?action=add_video&amp;referer=<%= env.get("current_page") %>" method="post">
                                 <div class="pure-control-group">
                                     <label for="playlist_id"><%= I18n.translate(locale, "Add to playlist: ") %></label>
                                     <select name="playlist_id" id="playlist_id">
@@ -218,20 +218,12 @@
                                     </select>
                                 </div>
 
-                                <input type="hidden" name="csrf_token" value="<%= URI.encode_www_form(env.get?("csrf_token").try &.as(String) || "") %>">
+                                <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
                                 <input type="hidden" name="video_id" value="<%= video.id %>">
-                                <button data-onclick="add_playlist_video" data-id="<%= video.id %>" type="submit" class="watch-button">
+                                <button type="submit" class="watch-button">
                                     <%= I18n.translate(locale, "Add to playlist") %>
                                 </button>
                             </form>
-                            <script id="playlist_data" type="application/json">
-                            <%=
-                            {
-                                "csrf_token" => URI.encode_www_form(env.get?("csrf_token").try &.as(String) || "")
-                            }.to_pretty_json
-                            %>
-                            </script>
-                            <script src="/js/playlist_widget.js?v=<%= ASSET_COMMIT %>"></script>
                         <% end %>
                     <% end %>
 

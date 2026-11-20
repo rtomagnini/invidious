@@ -133,7 +133,8 @@ module Invidious::Routes::Account
       env.response.cookies << cookie
     end
 
-    env.redirect referer
+    Invidious::User::Cookies.set_feedback(env, "feedback_account_deleted")
+    env.redirect "/"
   end
 
   # -------------------
@@ -182,6 +183,7 @@ module Invidious::Routes::Account
     end
 
     Invidious::Database::Users.clear_watch_history(user)
+    Invidious::User::Cookies.set_feedback(env, "feedback_history_cleared")
     env.redirect referer
   end
 

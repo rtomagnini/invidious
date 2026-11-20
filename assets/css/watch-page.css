@@ -23,11 +23,8 @@
 }
 
 .watch-page #player-container {
-  box-sizing: border-box;
-  height: auto;
+  position: relative;
   aspect-ratio: 16 / 9;
-  margin: 0;
-  padding: 0;
   border-radius: .9rem;
   background: #000;
   overflow: hidden;

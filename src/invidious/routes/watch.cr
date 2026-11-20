@@ -146,7 +146,6 @@ module Invidious::Routes::Watch
     end
     captions = captions - preferred_captions
 
-    aspect_ratio = "16:9"
 
     thumbnail = "/vi/#{video.id}/maxres.jpg"
 

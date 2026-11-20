@@ -1,7 +1,7 @@
 <%
     invidious_companion_check_id = invidious_companion_encrypt(video.id) if invidious_companion
 %>
-<video style="outline:none;width:100%;background-color:#000" playsinline poster="<%= thumbnail %>"
+<video playsinline poster="<%= thumbnail %>"
     id="player" class="on-video_player video-js player-style-<%= params.player_style %>"
     preload="<% if params.preload %>auto<% else %>none<% end %>"
     <% if params.autoplay %>autoplay<% end %>
@@ -89,7 +89,6 @@
 <script id="player_data" type="application/json">
 <%=
 {
-    "aspect_ratio" => aspect_ratio,
     "title" => video.title,
     "description" => HTML.escape(video.short_description),
     "thumbnail" => thumbnail,

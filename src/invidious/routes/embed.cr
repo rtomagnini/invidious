@@ -211,8 +211,6 @@ module Invidious::Routes::Embed
     end
     captions = captions - preferred_captions
 
-    aspect_ratio = nil
-
     thumbnail = "/vi/#{video.id}/maxres.jpg"
 
     if params.raw

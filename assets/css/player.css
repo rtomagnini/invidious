@@ -214,28 +214,18 @@ ul.vjs-menu-content::-webkit-scrollbar {
   padding-right: 0px;
 }
 
-.video-js .vjs-poster {
-  background-size: cover;
-  object-fit: cover;
+/* Fill the frame while preserving the media's original proportions. */
+.video-js .vjs-tech,
+video#player {
+  object-fit: contain;
 }
 
-.player-dimensions.vjs-fluid {
-  padding-top: 82vh;
-}
-
-video.video-js {
+video#player {
   position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
-}
-
-#player-container {
-  position: relative;
-  padding-left: 0;
-  padding-right: 0;
-  margin-left: 1em;
-  margin-right: 1em;
-  padding-bottom: 82vh;
-  height: 0;
+  background: #000;
 }
 
 .mobile-operations-bar {

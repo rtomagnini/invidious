@@ -4,6 +4,7 @@ var video_data = JSON.parse(document.getElementById('video_data').textContent);
 const CONFIG = JSON.parse(document.getElementById('config').textContent);
 
 var options = {
+    fill: true,
     liveui: true,
     playbackRates: [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0],
     fontPercent: [0.5, 0.75, 1.25, 1.5, 1.75, 2, 3, 4],
@@ -34,10 +35,6 @@ var options = {
         }
     }
 };
-
-if (player_data.aspect_ratio) {
-    options.aspectRatio = player_data.aspect_ratio;
-}
 
 var embed_url = new URL(location);
 embed_url.searchParams.delete('v');

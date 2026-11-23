@@ -21,6 +21,7 @@
     }
 
     document.querySelectorAll('[data-subscription-filter]').forEach(function (form) {
+        var panel = form.closest('.channel-feed-filter');
         var fieldset = form.querySelector('fieldset');
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
@@ -33,6 +34,11 @@
             try {
                 var result = await feedback.post(new URL(form.action), body);
                 showSelection(form, result.selected, result.custom);
+                if (panel?.open) {
+                    var restoreFocus = panel.contains(document.activeElement) || document.activeElement === document.body;
+                    panel.open = false;
+                    if (restoreFocus) panel.querySelector('summary').focus();
+                }
                 feedback.toast('filterSaved');
             } catch {
                 feedback.showError(form, 'filterError');
@@ -41,7 +47,6 @@
             }
         });
 
-        var panel = form.closest('.channel-feed-filter');
         if (!panel) return;
 
         var actions = panel.closest('[data-subscription-filter-scope]');

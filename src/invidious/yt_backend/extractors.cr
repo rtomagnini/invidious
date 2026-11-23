@@ -171,6 +171,7 @@ private module Parsers
         author_thumbnail:   author_thumbnail,
         badges:             badges,
         is_short:           Invidious::Videos::Shorts.from_renderer(item_contents),
+        is_members_only:    (true if has_members_only_badge?(item_contents["badges"]?)),
       })
     end
 
@@ -670,6 +671,7 @@ private module Parsers
         author_thumbnail:   nil,
         badges:             VideoBadges::None,
         is_short:           true,
+        is_members_only:    (true if has_members_only_badge?(item_contents["badges"]?)),
       })
     end
 
@@ -716,17 +718,11 @@ private module Parsers
         published = nil
         view_count_text = nil
         premiere_timestamp = nil
-        # Contains the views of the video and the published time of the video.
-        if (metadata_rows = metadata.dig("metadata", "contentMetadataViewModel", "metadataRows").try &.as_a)
-          metadata_rows.each do |row|
-            # To filter members only videos, they do not have metadataParts available.
-            # This videos are not hidden from the channel videos list.
-            badges = row.dig?("badges").try &.as_a
-            if badges.try &.any? { |item| item.dig?("badgeViewModel", "badgeStyle").try &.as_s == "BADGE_MEMBERS_ONLY" }
-              next
-            end
+        metadata_rows = metadata.dig?("metadata", "contentMetadataViewModel", "metadataRows").try(&.as_a?) || [] of JSON::Any
+        members_only = metadata_rows.any? { |row| has_members_only_badge?(row["badges"]?) }
 
-            metadata_parts = row.dig("metadataParts").try &.as_a
+        metadata_rows.each do |row|
+          if metadata_parts = row["metadataParts"]?.try(&.as_a?)
 
             if view_count_text.nil?
               view_count_text = metadata_parts.try &.find { |item| item["icon"]?.nil? && item.dig?("text", "content").try &.as_s.includes?("views") }
@@ -750,9 +746,12 @@ private module Parsers
               end
             end
 
-            break if !view_count_text.nil? && !published.nil? && !premiere_timestamp.nil?
           end
+          break if view_count_text && published && premiere_timestamp
         end
+
+        # Public lockups have both a view count and a publication date, unlike members-only lockups.
+        membership = members_only ? true : (false if view_count_text && published)
 
         view_count = short_text_to_number(view_count_text || "0")
 
@@ -775,6 +774,7 @@ private module Parsers
           author_thumbnail:   nil,
           badges:             live_now ? VideoBadges::LiveNow : VideoBadges::None,
           is_short:           Invidious::Videos::Shorts.from_renderer(item_contents),
+          is_members_only:    membership,
         })
         # If it's a playlist, it's content_type would be "LOCKUP_CONTENT_TYPE_PLAYLIST"
         # If it's a podcast, it's content_type would be "LOCKUP_CONTENT_TYPE_PODCAST"
@@ -979,6 +979,7 @@ private module Parsers
         author_thumbnail:   nil,
         badges:             VideoBadges::None,
         is_short:           true,
+        is_members_only:    (true if has_members_only_badge?(item_contents["badges"]?)),
       })
     end
 

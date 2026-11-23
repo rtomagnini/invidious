@@ -4,6 +4,7 @@ module Invidious::Database::SubscriptionFilters
   VIDEO = 'v'
   SHORT = 's'
   LIVE  = 'l'
+  HIDE_MEMBERS = 'm'
 
   def select(email : String) : Hash(String, String)
     PG_DB.query_all(
@@ -34,7 +35,9 @@ module Invidious::Database::SubscriptionFilters
           WHEN cv.is_livestream IS TRUE THEN 'l'
           WHEN cv.is_short IS TRUE THEN 's'
           ELSE 'v'
-        END) > 0 FROM subscription_filters sf
+        END) > 0
+          AND (cv.is_members_only IS NOT TRUE OR strpos(sf.types, 'm') = 0)
+         FROM subscription_filters sf
         WHERE sf.email = #{email} AND sf.ucid = cv.ucid),
         NOT (#{hide_shorts} AND cv.is_short IS TRUE)
       )

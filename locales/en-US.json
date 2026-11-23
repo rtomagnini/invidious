@@ -1,4 +1,7 @@
 {
+    "video_card_members_only": "Members only",
+    "subscription_filter_hide_members": "Hide members-only videos",
+    "subscription_filter_members_hidden": "Members-only videos hidden",
     "hashtag_empty": "No videos on this page for this hashtag.",
     "popular_empty": "No popular videos are available right now.",
     "feedback_watched": "Marked as watched.",

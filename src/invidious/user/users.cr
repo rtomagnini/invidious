@@ -57,13 +57,13 @@ module Invidious::User::Users
 
       if user.preferences.latest_only
         videos = PG_DB.query_all(<<-SQL, *args, as: ChannelVideo)
-          SELECT DISTINCT ON (cv.ucid) cv.* FROM #{view_name} cv
+          SELECT DISTINCT ON (cv.ucid) cv.* FROM #{view_name} feed JOIN channel_videos cv ON cv.id = feed.id
           WHERE #{where} ORDER BY cv.ucid, cv.published DESC
           SQL
         videos.sort_by!(&.published).reverse!
       else
         videos = PG_DB.query_all(<<-SQL, *args, limit, offset, as: ChannelVideo)
-          SELECT cv.* FROM #{view_name} cv WHERE #{where}
+          SELECT cv.* FROM #{view_name} feed JOIN channel_videos cv ON cv.id = feed.id WHERE #{where}
           ORDER BY cv.published DESC LIMIT $5 OFFSET $6
           SQL
       end

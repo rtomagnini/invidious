@@ -58,6 +58,7 @@ module Invidious::Routes::Subscriptions
           io << Invidious::Database::SubscriptionFilters::VIDEO if env.params.body["filter_videos"]? == "on"
           io << Invidious::Database::SubscriptionFilters::SHORT if env.params.body["filter_shorts"]? == "on"
           io << Invidious::Database::SubscriptionFilters::LIVE if env.params.body["filter_live"]? == "on"
+          io << Invidious::Database::SubscriptionFilters::HIDE_MEMBERS if env.params.body["hide_members_only"]? == "on"
         end
         Invidious::Database::SubscriptionFilters.save(user.email, channel_id, types)
       end

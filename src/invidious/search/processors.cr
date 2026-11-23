@@ -40,7 +40,7 @@ module Invidious::Search::Processors
     filter = Invidious::Database::SubscriptionFilters.allowed_sql("$3", "$4")
 
     return PG_DB.query_all(<<-SQL, query.text, (query.page - 1) * 20, user.email, user.preferences.hide_shorts, as: ChannelVideo)
-      SELECT cv.* FROM #{view_name} cv
+      SELECT cv.* FROM #{view_name} feed JOIN channel_videos cv ON cv.id = feed.id
       WHERE #{filter}
         AND (to_tsvector(cv.title) || to_tsvector(cv.author)) @@ plainto_tsquery($1)
       LIMIT 20 OFFSET $2

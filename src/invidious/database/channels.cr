@@ -107,12 +107,13 @@ module Invidious::Database::ChannelVideos
 
     request = <<-SQL
       INSERT INTO channel_videos
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       ON CONFLICT (id) DO UPDATE
       SET title = $2, published = $3, updated = $4, ucid = $5,
           author = $6, length_seconds = $7, live_now = $8, #{last_items},
           is_short = COALESCE($11, channel_videos.is_short),
-          is_livestream = COALESCE(channel_videos.is_livestream OR $12, $12, channel_videos.is_livestream)
+          is_livestream = COALESCE(channel_videos.is_livestream OR $12, $12, channel_videos.is_livestream),
+          is_members_only = COALESCE($13, channel_videos.is_members_only)
       RETURNING (xmax=0) AS was_insert
       SQL
 
@@ -145,10 +146,23 @@ module Invidious::Database::ChannelVideos
     Invidious::Database::Users.feed_needs_update(ucid) if result.rows_affected > 0
   end
 
+  def classify_membership(ucid : String, videos : Array(SearchVideo))
+    members = videos.select { |video| video.is_members_only == true }.map(&.id)
+    public_videos = videos.select { |video| video.is_members_only == false }.map(&.id)
+    return if members.empty? && public_videos.empty?
+
+    PG_DB.exec(<<-SQL, ucid, members, public_videos)
+      UPDATE channel_videos
+      SET is_members_only = (id = ANY($2))
+      WHERE ucid = $1 AND (id = ANY($2) OR id = ANY($3))
+        AND is_members_only IS DISTINCT FROM (id = ANY($2))
+      SQL
+  end
+
   def insert_livestream_from_tab(video : ChannelVideo) : Bool
     result = PG_DB.exec(<<-SQL, *video.to_tuple)
       INSERT INTO channel_videos
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       ON CONFLICT (id) DO NOTHING
       SQL
     result.rows_affected > 0

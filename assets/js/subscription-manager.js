@@ -39,7 +39,11 @@
             });
 
             var summary = form.closest('.subscription-card').querySelector('.subscription-status');
-            summary.textContent = result.custom ? (labels.join(', ') || form.dataset.empty) : form.dataset.inherit;
+            var members = form.elements.hide_members_only;
+            members.checked = result.selected.includes(members.dataset.membersType);
+            if (!labels.length) labels.push(form.dataset.empty);
+            if (members.checked) labels.push(form.dataset.membersHidden);
+            summary.textContent = result.custom ? labels.join(', ') : form.dataset.inherit;
             summary.classList.toggle('subscription-status-custom', result.custom);
             form.querySelector('[value="inherit"]').hidden = !result.custom;
             feedback.toast('filterSaved');

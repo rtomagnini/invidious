@@ -1,4 +1,7 @@
 {
+    "video_card_members_only": "Solo para miembros",
+    "subscription_filter_hide_members": "Ocultar vídeos solo para miembros",
+    "subscription_filter_members_hidden": "Vídeos para miembros ocultos",
     "hashtag_empty": "No hay vídeos en esta página del hashtag.",
     "popular_empty": "Ahora mismo no hay vídeos populares disponibles.",
     "feedback_watched": "Marcado como visto.",

@@ -180,6 +180,9 @@
                 </div>
 
                 <div class="bottom-right-overlay video-card-badge-area">
+                    <%- if item.responds_to?(:is_members_only) && item.is_members_only -%>
+                        <span class="video-card-badge video-card-members"><i class="icon ion-ios-lock" aria-hidden="true"></i> <%= I18n.translate(locale, "video_card_members_only") %></span>
+                    <%- end -%>
                     <%- if live_now -%>
                         <span class="video-card-badge video-card-live"><i class="icon ion-ios-radio" aria-hidden="true"></i> <%= I18n.translate(locale, "LIVE") %></span>
                     <%- elsif scheduled_at -%>

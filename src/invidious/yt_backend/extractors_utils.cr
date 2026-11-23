@@ -66,6 +66,17 @@ rescue ex
   return false
 end
 
+# Badge styles are stable across translated labels and separate from Premium.
+def has_members_only_badge?(badges : JSON::Any?) : Bool
+  return false unless items = badges.try(&.as_a?)
+
+  items.any? do |badge|
+    style = badge.dig?("badgeViewModel", "badgeStyle").try(&.as_s?) ||
+            badge.dig?("metadataBadgeRenderer", "style").try(&.as_s?)
+    {"BADGE_MEMBERS_ONLY", "BADGE_STYLE_TYPE_MEMBERS_ONLY", "BADGE_STYLE_TYPE_SPONSOR_ONLY"}.includes?(style)
+  end
+end
+
 # This function extracts SearchVideo items from a Category.
 # Categories are commonly returned in search results and trending pages.
 def extract_category(category : Category) : Array(SearchVideo)

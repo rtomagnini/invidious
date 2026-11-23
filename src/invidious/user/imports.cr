@@ -99,7 +99,7 @@ struct Invidious::User
       if filters = data["subscription_filters"]?.try &.as_h?
         filters.each do |ucid, value|
           types = value.as_s?
-          next unless types && types.matches?(/\Av?s?l?\z/)
+          next unless types && types.matches?(/\Av?s?l?m?\z/)
           Invidious::Database::SubscriptionFilters.save(user.email, ucid, types)
         end
       end

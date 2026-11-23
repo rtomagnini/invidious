@@ -34,7 +34,9 @@ module Invidious::Channels::Shorts
     if items.any?(ProblematicTimelineItem)
       raise InfoException.new("Unable to parse channel Shorts")
     end
-    ids = items.select(SearchVideo).map(&.id).to_set
+    videos = items.select(SearchVideo)
+    ids = videos.map(&.id).to_set
+    Invidious::Database::ChannelVideos.classify_membership(channel.id, videos)
     CACHE.delete(CACHE.keys.first) if CACHE.size >= 256
     CACHE[channel.id] = {Time.utc + 5.minutes, ids}
     Invidious::Database::ChannelVideos.classify(channel.id, ids.to_a, true)
@@ -46,7 +48,9 @@ module Invidious::Channels::Shorts
       if older.any?(ProblematicTimelineItem)
         raise InfoException.new("Unable to parse historical Shorts")
       end
-      Invidious::Database::ChannelVideos.classify(channel.id, older.select(SearchVideo).map(&.id), true)
+      older_videos = older.select(SearchVideo)
+      Invidious::Database::ChannelVideos.classify(channel.id, older_videos.map(&.id), true)
+      Invidious::Database::ChannelVideos.classify_membership(channel.id, older_videos)
       cursor = next_cursor || ""
     end
 

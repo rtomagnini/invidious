@@ -177,6 +177,7 @@ module Invidious::Routes::Feeds
         author_thumbnail:   nil,
         badges:             VideoBadges::None,
         is_short:           nil,
+        is_members_only:    nil,
       })
     end
 
@@ -431,6 +432,7 @@ module Invidious::Routes::Feeds
           views:              video.views,
           is_short:           Invidious::Channels::Shorts.classify_video(id, author, video.ucid),
           is_livestream:      Invidious::Channels::Livestreams.classify_video(id, author, video.ucid),
+          is_members_only:    nil,
         })
 
         was_insert = Invidious::Database::ChannelVideos.insert(video, with_premiere_timestamp: true)

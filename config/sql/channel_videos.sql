@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.channel_videos
   views bigint,
   is_short boolean,
   is_livestream boolean,
+  is_members_only boolean,
   CONSTRAINT channel_videos_id_key UNIQUE (id)
 );
 

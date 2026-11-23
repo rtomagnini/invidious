@@ -23,12 +23,14 @@ module Invidious::Channels::Livestreams
     items.each { |video| latest[video.id] = video }
     cache(channel.id, latest.keys.to_set)
     Invidious::Database::ChannelVideos.classify_livestreams(channel.id, latest.keys)
+    Invidious::Database::ChannelVideos.classify_membership(channel.id, items)
 
     if cursor.nil?
       cursor = continuation || ""
     elsif !cursor.empty?
       older, next_cursor = fetch_page(channel.author, channel.id, cursor)
       Invidious::Database::ChannelVideos.classify_livestreams(channel.id, older.map(&.id))
+      Invidious::Database::ChannelVideos.classify_membership(channel.id, older)
       cursor = next_cursor || ""
     end
 
@@ -73,6 +75,7 @@ module Invidious::Channels::Livestreams
           views:              stream.views,
           is_short:           nil,
           is_livestream:      true,
+          is_members_only:    stream.is_members_only,
         })
         if Invidious::Database::ChannelVideos.insert_livestream_from_tab(video)
           NOTIFICATION_CHANNEL.send(VideoNotification.from_video(video))

@@ -26,6 +26,7 @@ struct ChannelVideo
   property views : Int64? = nil
   property is_short : Bool? = nil
   property is_livestream : Bool? = nil
+  property is_members_only : Bool? = nil
 
   def to_json(locale, json : JSON::Builder)
     json.object do
@@ -39,6 +40,7 @@ struct ChannelVideo
 
       json.field "lengthSeconds", self.length_seconds
       json.field "isShort", self.is_short
+      json.field "isMembersOnly", self.is_members_only
 
       json.field "author", self.author
       json.field "authorId", self.ucid
@@ -207,12 +209,15 @@ module Invidious::Channels::Channels
 
     LOGGER.trace("fetch_channel: #{ucid} : Downloading channel videos page")
     videos, continuation = IV::Channel::Tabs.get_videos(channel)
+    channel_videos = videos.select(SearchVideo)
+    videos_by_id = channel_videos.to_h { |video| {video.id, video} }
+    Invidious::Database::ChannelVideos.classify_membership(ucid, channel_videos)
 
     short_ids, shorts_continuation = Invidious::Channels::Shorts.refresh(channel)
     channel.shorts_continuation = shorts_continuation
     streams, channel.livestreams_continuation = Invidious::Channels::Livestreams.refresh(channel)
     rss_ids = Set(String).new
-    Invidious::Database::ChannelVideos.classify(ucid, videos.select(SearchVideo).reject { |v| v.is_short == true }.map(&.id), false)
+    Invidious::Database::ChannelVideos.classify(ucid, channel_videos.reject { |v| v.is_short == true }.map(&.id), false)
 
     LOGGER.trace("fetch_channel: #{ucid} : Extracting videos from channel RSS feed")
     rss.xpath_nodes("//default:feed/default:entry", namespaces).each do |entry|
@@ -235,7 +240,11 @@ module Invidious::Channels::Channels
         .xpath_node("media:group/media:community/media:statistics", namespaces)
         .try &.["views"]?.try &.to_i64? || 0_i64
 
-      channel_video = stream || videos.select(SearchVideo).find(&.id.== video_id)
+      tab_video = videos_by_id[video_id]?
+      channel_video = stream || tab_video
+      members_only = stream.try(&.is_members_only)
+      tab_membership = tab_video.try(&.is_members_only)
+      members_only = tab_membership if members_only.nil? || tab_membership == true
 
       length_seconds = channel_video.try &.length_seconds
       length_seconds ||= 0
@@ -259,6 +268,7 @@ module Invidious::Channels::Channels
         views:              views,
         is_short:           short_ids.includes?(video_id) ? true : channel_video.try(&.is_short),
         is_livestream:      stream ? true : nil,
+        is_members_only:    members_only,
       })
 
       LOGGER.trace("fetch_channel: #{ucid} : video #{video_id} : Updating or inserting video")
@@ -296,6 +306,7 @@ module Invidious::Channels::Channels
             views:              video.views,
             is_short:           video.is_short,
             is_livestream:      nil,
+            is_members_only:    video.is_members_only,
           })
 
           # We are notified of Red videos elsewhere (PubSub), which includes a correct published date,

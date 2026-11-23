@@ -154,7 +154,7 @@ module Invidious::Database::Users
 
     request = <<-SQL
       SELECT cv.id, cv.title, cv.author, cv.live_now IS TRUE, cv.premiere_timestamp,
-        cv.is_livestream IS TRUE, count(*) OVER ()
+        cv.is_livestream IS TRUE, count(*) OVER (), cv.is_members_only IS TRUE
       FROM channel_videos cv
       WHERE EXISTS (SELECT 1 FROM users WHERE email = $1
         AND cv.id = ANY(notifications) AND cv.ucid = ANY(subscriptions))
@@ -164,7 +164,7 @@ module Invidious::Database::Users
       SQL
 
     PG_DB.query_all(request, user.email, user.preferences.hide_shorts,
-      as: {String, String, String, Bool, Time?, Bool, Int64})
+      as: {String, String, String, Bool, Time?, Bool, Int64, Bool})
   end
 
   def clear_notifications(user : User)

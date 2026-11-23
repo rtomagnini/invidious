@@ -1,44 +1,36 @@
 'use strict';
-var subscribe_data = JSON.parse(document.getElementById('subscribe_data').textContent);
-var payload = 'csrf_token=' + subscribe_data.csrf_token;
 
-var subscribe_button = document.getElementById('subscribe');
-subscribe_button.parentNode.action = 'javascript:void(0)';
+(function () {
+    var button = document.getElementById('subscribe');
+    var form = button.form;
+    var label = button.querySelector('[data-subscribe-text]');
 
-if (subscribe_button.getAttribute('data-type') === 'subscribe') {
-    subscribe_button.onclick = subscribe;
-} else {
-    subscribe_button.onclick = unsubscribe;
-}
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        if (button.disabled) return;
 
-function subscribe() {
-    var fallback = subscribe_button.innerHTML;
-    subscribe_button.onclick = unsubscribe;
-    subscribe_button.innerHTML = '<b>' + subscribe_data.unsubscribe_text + ' | ' + subscribe_data.sub_count_text + '</b>';
+        var url = new URL(form.action);
+        var body = new URLSearchParams(new FormData(form));
+        var subscribed = button.dataset.type === 'subscribe';
+        var fieldset = form.closest('[data-subscription-filter-scope]')?.querySelector('[data-subscription-filter] fieldset');
+        if (fieldset?.disabled) return;
 
-    var url = '/subscription_ajax?action=create_subscription_to_channel&redirect=false' +
-        '&c=' + subscribe_data.ucid;
-
-    helpers.xhr('POST', url, {payload: payload, retries: 5, entity_name: 'subscribe request'}, {
-        onNon200: function (xhr) {
-            subscribe_button.onclick = subscribe;
-            subscribe_button.innerHTML = fallback;
+        button.disabled = true;
+        if (fieldset) fieldset.disabled = true;
+        feedback.clearError(form);
+        try {
+            await feedback.post(url, body);
+            button.dataset.type = subscribed ? 'unsubscribe' : 'subscribe';
+            label.textContent = subscribed ? form.dataset.unsubscribeLabel : form.dataset.subscribeLabel;
+            url.searchParams.delete('redirect');
+            url.searchParams.set('action', subscribed ? 'remove_subscriptions' : 'create_subscription_to_channel');
+            form.action = url.href;
+            form.dispatchEvent(new CustomEvent('subscription-change', {bubbles: true, detail: {subscribed: subscribed}}));
+        } catch {
+            feedback.showError(form, 'actionError');
+        } finally {
+            button.disabled = false;
+            if (fieldset) fieldset.disabled = false;
         }
     });
-}
-
-function unsubscribe() {
-    var fallback = subscribe_button.innerHTML;
-    subscribe_button.onclick = subscribe;
-    subscribe_button.innerHTML = '<b>' + subscribe_data.subscribe_text + ' | ' + subscribe_data.sub_count_text + '</b>';
-
-    var url = '/subscription_ajax?action=remove_subscriptions&redirect=false' +
-        '&c=' + subscribe_data.ucid;
-
-    helpers.xhr('POST', url, {payload: payload, retries: 5, entity_name: 'unsubscribe request'}, {
-        onNon200: function (xhr) {
-            subscribe_button.onclick = unsubscribe;
-            subscribe_button.innerHTML = fallback;
-        }
-    });
-}
+})();

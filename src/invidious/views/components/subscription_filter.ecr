@@ -1,0 +1,38 @@
+<%
+    filter_defaults = filter_hide_shorts ? "vl" : "vsl"
+    filter_selected = filter_types || filter_defaults
+    hide_members = filter_selected.includes?(Invidious::Database::SubscriptionFilters::HIDE_MEMBERS)
+%>
+<details class="subscription-filter<%= " channel-feed-filter" if filter_on_channel %>"<%= " hidden" if filter_on_channel && !subscribed %>>
+    <summary>
+        <i class="icon ion-ios-options" aria-hidden="true"></i>
+        <%= I18n.translate(locale, filter_on_channel ? "subscription_channel_feed_filters" : "subscription_manager_edit_filter") %>
+        <i class="icon ion-ios-arrow-down subscription-chevron" aria-hidden="true"></i>
+    </summary>
+    <form data-subscription-filter
+          data-defaults="<%= filter_defaults %>"
+          data-inherit="<%= HTML.escape(I18n.translate(locale, "subscription_filter_inherit")) %>"
+          data-members-hidden="<%= HTML.escape(I18n.translate(locale, "subscription_filter_members_hidden")) %>"
+          data-empty="<%= HTML.escape(I18n.translate(locale, "subscription_filter_empty")) %>"
+          method="post" action="/subscription_ajax?action=save_filter&amp;c=<%= URI.encode_www_form(filter_channel_id) %>&amp;referer=<%= HTML.escape(filter_referer) %>">
+        <input type="hidden" name="csrf_token" value="<%= HTML.escape(env.get?("csrf_token").try &.as(String) || "") %>">
+        <fieldset>
+            <legend><%= I18n.translate(locale, "subscription_filter_feed_types") %></legend>
+            <% Invidious::Database::SubscriptionFilters::OPTIONS.each do |name, code| %>
+                <label>
+                    <span><%= I18n.translate(locale, "subscription_filter_#{name}") %></span>
+                    <input type="checkbox" class="site-switch" name="filter_<%= name %>" data-type="<%= code %>" <%= "checked" if filter_selected.includes?(code) %>>
+                </label>
+            <% end %>
+            <label>
+                <span><%= I18n.translate(locale, "subscription_filter_hide_members") %></span>
+                <input type="checkbox" class="site-switch" name="hide_members_only"
+                       data-type="<%= Invidious::Database::SubscriptionFilters::HIDE_MEMBERS %>" <%= "checked" if hide_members %>>
+            </label>
+            <div class="subscription-filter-actions">
+                <button class="subscription-save" type="submit" name="filter_mode" value="custom"><%= I18n.translate(locale, "subscription_filter_save") %></button>
+                <button type="submit" name="filter_mode" value="inherit"<%= " hidden" unless filter_types %>><%= I18n.translate(locale, "subscription_filter_inherit") %></button>
+            </div>
+        </fieldset>
+    </form>
+</details>

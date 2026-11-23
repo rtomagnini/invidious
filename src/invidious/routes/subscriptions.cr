@@ -65,7 +65,7 @@ module Invidious::Routes::Subscriptions
 
       if redirect
         Invidious::User::Cookies.set_feedback(env, "feedback_filter_saved")
-        return env.redirect "/subscription_manager"
+        return env.redirect(env.params.query.has_key?("referer") ? referer : "/subscription_manager")
       end
 
       env.response.content_type = "application/json"

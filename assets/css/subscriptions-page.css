@@ -34,14 +34,13 @@
   font-size: .9rem;
 }
 
-.subscriptions-links,
-.subscription-filter-actions {
+.subscriptions-links {
   display: flex;
   flex-wrap: wrap;
   gap: .4rem;
 }
 
-.subscriptions-page :is(.subscriptions-links a, .subscription-filter summary, .subscription-card button) {
+.subscriptions-page :is(.subscriptions-links a, .subscription-remove button) {
   display: inline-flex;
   align-items: center;
   gap: .45rem;
@@ -57,7 +56,7 @@
   cursor: pointer;
 }
 
-.subscriptions-page :is(.subscriptions-links a, .subscription-filter summary, .subscription-card button):hover {
+.subscriptions-page :is(.subscriptions-links a, .subscription-remove button):hover {
   color: var(--site-ink);
   background: var(--site-hover);
 }
@@ -168,46 +167,6 @@
 .subscription-status-custom {
   background: var(--site-selected);
   color: var(--site-accent);
-}
-
-.subscription-filter summary::-webkit-details-marker { display: none; }
-.subscription-filter summary { list-style: none; }
-.subscription-chevron { margin-inline-start: auto; }
-.subscription-filter[open] .subscription-chevron { transform: rotate(180deg); }
-
-.subscription-filter fieldset {
-  min-width: 0;
-  margin: .65rem 0 0;
-  padding: .3rem 0 0;
-  border: 0;
-}
-
-.subscription-filter legend {
-  padding: 0;
-  color: var(--site-muted);
-  font-size: .8rem;
-}
-
-.subscription-filter label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .8rem;
-  min-height: 2.4rem;
-  border-bottom: 1px solid var(--site-line);
-  cursor: pointer;
-}
-.subscription-filter-actions { margin-top: .35rem; }
-
-.subscription-filter-actions .subscription-save {
-  border-color: transparent;
-  background: #3654b0;
-  color: #fff;
-}
-
-.subscription-filter-actions .subscription-save:hover {
-  background: #284295;
-  color: #fff;
 }
 
 .subscription-remove button:hover { color: var(--subscriptions-danger); }

@@ -1,15 +1,16 @@
 <% content_for "header" do %>
 <title><%= I18n.translate(locale, "Subscription manager") %> - Invidious</title>
 <link rel="stylesheet" href="/css/subscriptions-page.css?v=<%= ASSET_COMMIT %>">
+<link rel="stylesheet" href="/css/subscription-filter.css?v=<%= ASSET_COMMIT %>">
+<script defer src="/js/subscription-filter.js?v=<%= ASSET_COMMIT %>"></script>
 <% end %>
 
 <%
     csrf_token = HTML.escape(env.get?("csrf_token").try &.as(String) || "")
-    options = [
-        {"videos", Invidious::Database::SubscriptionFilters::VIDEO},
-        {"shorts", Invidious::Database::SubscriptionFilters::SHORT},
-        {"live", Invidious::Database::SubscriptionFilters::LIVE},
-    ]
+    filter_hide_shorts = user.preferences.hide_shorts
+    filter_referer = "%2Fsubscription_manager"
+    filter_on_channel = false
+    subscribed = true
 %>
 
 <main class="subscriptions-page" aria-labelledby="subscription-manager-title">
@@ -40,10 +41,12 @@
         <ul class="subscription-list" id="subscription-list">
             <% subscriptions.each do |channel| %>
                 <%
+                    filter_channel_id = channel.id
                     types = filters[channel.id]?
+                    filter_types = types
                     selected = types || (user.preferences.hide_shorts ? "vl" : "vsl")
                     hide_members = types.try(&.includes?(Invidious::Database::SubscriptionFilters::HIDE_MEMBERS)) == true
-                    labels = options.select { |_, code| selected.includes?(code) }.map { |name, _|
+                    labels = Invidious::Database::SubscriptionFilters::OPTIONS.select { |_, code| selected.includes?(code) }.map { |name, _|
                         I18n.translate(locale, "subscription_filter_#{name}")
                     }
                     summary = if types.nil?
@@ -54,7 +57,7 @@
                         labels.join(", ")
                     end
                 %>
-                <li class="subscription-card">
+                <li class="subscription-card" data-subscription-filter-scope>
                     <a class="subscription-identity" href="/channel/<%= channel.id %>">
                         <span class="subscription-avatar" aria-hidden="true">
                             <%= HTML.escape(channel.author.strip[0, 1].upcase) %>
@@ -68,34 +71,7 @@
                         </span>
                     </a>
 
-                    <details class="subscription-filter">
-                        <summary><i class="icon ion-ios-options" aria-hidden="true"></i> <%= I18n.translate(locale, "subscription_manager_edit_filter") %><i class="icon ion-ios-arrow-down subscription-chevron" aria-hidden="true"></i></summary>
-                        <form data-subscription-filter
-                              data-inherit="<%= HTML.escape(I18n.translate(locale, "subscription_filter_inherit")) %>"
-                              data-members-hidden="<%= HTML.escape(I18n.translate(locale, "subscription_filter_members_hidden")) %>"
-                              data-empty="<%= HTML.escape(I18n.translate(locale, "subscription_filter_empty")) %>"
-                              method="post" action="/subscription_ajax?action=save_filter&amp;c=<%= channel.id %>">
-                            <input type="hidden" name="csrf_token" value="<%= csrf_token %>">
-                            <fieldset>
-                                <legend><%= I18n.translate(locale, "subscription_filter_feed_types") %></legend>
-                                <% options.each do |name, code| %>
-                                    <label>
-                                        <span><%= I18n.translate(locale, "subscription_filter_#{name}") %></span>
-                                        <input type="checkbox" class="site-switch" name="filter_<%= name %>" data-type="<%= code %>" <%= "checked" if selected.includes?(code) %>>
-                                    </label>
-                                <% end %>
-                                <label>
-                                    <span><%= I18n.translate(locale, "subscription_filter_hide_members") %></span>
-                                    <input type="checkbox" class="site-switch" name="hide_members_only"
-                                           data-members-type="<%= Invidious::Database::SubscriptionFilters::HIDE_MEMBERS %>" <%= "checked" if hide_members %>>
-                                </label>
-                                <div class="subscription-filter-actions">
-                                    <button class="subscription-save" type="submit" name="filter_mode" value="custom"><%= I18n.translate(locale, "subscription_filter_save") %></button>
-                                    <button type="submit" name="filter_mode" value="inherit"<%= " hidden" unless types %>><%= I18n.translate(locale, "subscription_filter_inherit") %></button>
-                                </div>
-                            </fieldset>
-                        </form>
-                    </details>
+                    <%= rendered "components/subscription_filter" %>
 
                     <form class="subscription-remove" method="post" action="/subscription_ajax?action=remove_subscriptions&amp;c=<%= channel.id %>&amp;referer=%2Fsubscription_manager">
                         <input type="hidden" name="csrf_token" value="<%= csrf_token %>">

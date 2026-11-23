@@ -19,41 +19,6 @@
         return {row: row, name: normalize(row.querySelector('.subscription-name').textContent)};
     });
 
-    list.addEventListener('submit', async function (event) {
-        var form = event.target;
-        if (!form.matches('[data-subscription-filter]')) return;
-        event.preventDefault();
-        var fieldset = form.querySelector('fieldset');
-        if (fieldset.disabled) return;
-
-        var body = new URLSearchParams(new FormData(form));
-        body.set('filter_mode', event.submitter?.value || 'custom');
-        feedback.clearError(form);
-        fieldset.disabled = true;
-        try {
-            var result = await feedback.post(new URL(form.action), body);
-            var labels = [];
-            form.querySelectorAll('input[data-type]').forEach(function (input) {
-                input.checked = result.selected.includes(input.dataset.type);
-                if (input.checked) labels.push(input.labels[0].textContent.trim());
-            });
-
-            var summary = form.closest('.subscription-card').querySelector('.subscription-status');
-            var members = form.elements.hide_members_only;
-            members.checked = result.selected.includes(members.dataset.membersType);
-            if (!labels.length) labels.push(form.dataset.empty);
-            if (members.checked) labels.push(form.dataset.membersHidden);
-            summary.textContent = result.custom ? labels.join(', ') : form.dataset.inherit;
-            summary.classList.toggle('subscription-status-custom', result.custom);
-            form.querySelector('[value="inherit"]').hidden = !result.custom;
-            feedback.toast('filterSaved');
-        } catch {
-            feedback.showError(form, 'filterError');
-        } finally {
-            fieldset.disabled = false;
-        }
-    });
-
     document.getElementById('subscription-search-box').hidden = false;
     field.addEventListener('input', function () {
         var query = normalize(field.value.trim());

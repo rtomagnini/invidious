@@ -24,9 +24,20 @@
                     </div>
                 </div>
 
-                <div class="channel-actions">
+                <div class="channel-actions" data-subscription-filter-scope>
                     <% sub_count_text = number_to_short_text(channel.sub_count) %>
                     <%= rendered "components/subscribe_widget" %>
+                    <% if filter_user = env.get?("user").try(&.as(User)) %>
+                        <%
+                            filter_channel_id = ucid
+                            filter_on_channel = true
+                            subscribed = subscriptions.includes?(ucid)
+                            filter_types = Invidious::Database::SubscriptionFilters.select(filter_user.email, ucid) if subscribed
+                            filter_referer = env.get("current_page").as(String)
+                            filter_hide_shorts = filter_user.preferences.hide_shorts
+                        %>
+                        <%= rendered "components/subscription_filter" %>
+                    <% end %>
                     <a href="/feed/channel/<%= ucid %>" class="channel-action">
                         <i class="icon ion-logo-rss" aria-hidden="true"></i> <%= I18n.translate(locale, "generic_button_rss") %>
                     </a>

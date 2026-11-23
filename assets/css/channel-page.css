@@ -4,7 +4,6 @@
 }
 
 .channel-hero {
-  overflow: hidden;
   border: 1px solid var(--site-line);
   border-radius: 1rem;
   background: var(--site-surface);
@@ -15,6 +14,8 @@
   width: 100%;
   height: clamp(5rem, 11vw, 10rem);
   object-fit: cover;
+  border-start-start-radius: calc(1rem - 1px);
+  border-start-end-radius: calc(1rem - 1px);
 }
 
 .channel-hero-body {
@@ -105,6 +106,30 @@
   background: var(--site-hover);
   color: var(--site-ink);
 }
+
+.channel-hero-top { position: relative; }
+
+.channel-feed-filter[open] > summary {
+  background: var(--site-selected);
+  color: var(--site-accent);
+}
+
+.channel-feed-filter > form {
+  position: absolute;
+  z-index: 5;
+  inset-block-start: calc(100% + .4rem);
+  inset-inline-end: 0;
+  box-sizing: border-box;
+  width: min(100%, 21rem);
+  padding: .85rem;
+  border: 1px solid var(--site-line);
+  border-radius: .75rem;
+  background: var(--site-surface);
+  color: var(--site-ink);
+  box-shadow: 0 .5rem 1.25rem rgb(0 0 0 / 18%);
+}
+
+.channel-page .channel-feed-filter fieldset { margin-top: 0; }
 
 .channel-description {
   max-width: 72ch;

@@ -5,6 +5,12 @@ module Invidious::Database::SubscriptionFilters
   SHORT = 's'
   LIVE  = 'l'
   HIDE_MEMBERS = 'm'
+  OPTIONS = [{"videos", VIDEO}, {"shorts", SHORT}, {"live", LIVE}]
+
+  def select(email : String, ucid : String) : String?
+    PG_DB.query_one?("SELECT types FROM subscription_filters WHERE email = $1 AND ucid = $2",
+      email, ucid, as: String)
+  end
 
   def select(email : String) : Hash(String, String)
     PG_DB.query_all(

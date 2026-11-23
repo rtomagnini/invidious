@@ -84,6 +84,7 @@
     "subscription_manager_search": "Find a channel",
     "subscription_manager_no_channels": "No subscriptions yet.",
     "subscription_manager_no_matches": "No channels match your search.",
+    "subscription_channel_feed_filters": "Feed filters",
     "subscription_manager_edit_filter": "Edit filter",
     "header_notifications": "Notifications",
     "preferences_unseen_only_description": "Shows the eye button to mark videos as watched in your subscriptions feed.",

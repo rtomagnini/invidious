@@ -14,6 +14,10 @@
 <link rel="alternate" href="<%= youtube_url %>">
 <title><%= author %> - Invidious</title>
 <link rel="stylesheet" href="/css/channel-page.css?v=<%= ASSET_COMMIT %>">
+<% if user %>
+    <link rel="stylesheet" href="/css/subscription-filter.css?v=<%= ASSET_COMMIT %>">
+    <script defer src="/js/subscription-filter.js?v=<%= ASSET_COMMIT %>"></script>
+<% end %>
 <link rel="stylesheet" href="/css/community-page.css?v=<%= ASSET_COMMIT %>">
 <% end %>
 

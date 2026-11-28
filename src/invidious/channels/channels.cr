@@ -217,10 +217,14 @@ module Invidious::Channels::Channels
     channel.shorts_continuation = shorts_continuation
     streams, channel.livestreams_continuation = Invidious::Channels::Livestreams.refresh(channel)
     rss_ids = Set(String).new
+    entries = rss.xpath_nodes("//default:feed/default:entry", namespaces)
+    entry_ids = entries.compact_map { |entry| entry.xpath_node("yt:videoId", namespaces).try(&.content) }
+    stored_videos = Invidious::Database::ChannelVideos.select(entry_ids).to_h { |video| {video.id, video} }
+    remaining_lookups = Invidious::Channels::Livestreams::MAX_WATCH_LOOKUPS
     Invidious::Database::ChannelVideos.classify(ucid, channel_videos.reject { |v| v.is_short == true }.map(&.id), false)
 
     LOGGER.trace("fetch_channel: #{ucid} : Extracting videos from channel RSS feed")
-    rss.xpath_nodes("//default:feed/default:entry", namespaces).each do |entry|
+    entries.each do |entry|
       video_id = entry.xpath_node("yt:videoId", namespaces).not_nil!.content
       rss_ids.add(video_id)
       stream = streams[video_id]?
@@ -255,6 +259,20 @@ module Invidious::Channels::Channels
       premiere_timestamp = channel_video.try &.premiere_timestamp
       premiere_timestamp = nil if stream && premiere_timestamp.try(&.<=(Time.utc))
 
+      is_livestream = stream ? true : nil
+      if !stream && stored_videos[video_id]?.try(&.is_livestream).nil? &&
+         !short_ids.includes?(video_id) && tab_video.try(&.is_short) != true &&
+         (length_seconds <= 0 || premiere_timestamp || live_now)
+        is_livestream = Invidious::Channels::Livestreams.probe_watch_page(video_id, ucid) do
+          if remaining_lookups > 0
+            remaining_lookups -= 1
+            true
+          else
+            false
+          end
+        end
+      end
+
       video = ChannelVideo.new({
         id:                 video_id,
         title:              title,
@@ -267,7 +285,7 @@ module Invidious::Channels::Channels
         premiere_timestamp: premiere_timestamp,
         views:              views,
         is_short:           short_ids.includes?(video_id) ? true : channel_video.try(&.is_short),
-        is_livestream:      stream ? true : nil,
+        is_livestream:      is_livestream,
         is_members_only:    members_only,
       })
 

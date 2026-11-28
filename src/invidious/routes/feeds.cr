@@ -419,6 +419,11 @@ module Invidious::Routes::Feeds
           next # skip this video since it raised an exception (e.g. it is a scheduled live event)
         end
 
+        is_livestream = Invidious::Channels::Livestreams.classify_video(id, author, video.ucid)
+        if is_livestream.nil? && (video.live_now || video.premiere_timestamp)
+          is_livestream = Invidious::Channels::Livestreams.probe_watch_page(id, video.ucid) { true }
+        end
+
         video = ChannelVideo.new({
           id:                 id,
           title:              video.title,
@@ -431,7 +436,7 @@ module Invidious::Routes::Feeds
           premiere_timestamp: video.premiere_timestamp,
           views:              video.views,
           is_short:           Invidious::Channels::Shorts.classify_video(id, author, video.ucid),
-          is_livestream:      Invidious::Channels::Livestreams.classify_video(id, author, video.ucid),
+          is_livestream:      is_livestream,
           is_members_only:    nil,
         })
 

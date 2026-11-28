@@ -2,6 +2,58 @@ module Invidious::Channels::Livestreams
   extend self
 
   CACHE = {} of String => Tuple(Time, Set(String))
+  WATCH_CACHE = {} of {String, String} => Tuple(Time, Bool?)
+
+  MAX_WATCH_LOOKUPS = 3
+
+  # A scheduled livestream can be in RSS before it appears in the Streams tab.
+  # Cache unresolved lookups too, so transient upstream failures can be retried
+  # without requesting the same page on every refresh.
+  def probe_watch_page(id : String, ucid : String, &) : Bool?
+    key = {id, ucid}
+    if cached = WATCH_CACHE[key]?
+      return cached[1] if cached[0] > Time.utc
+    end
+    return unless validate_video_id(id) && yield
+
+    classification = fetch_watch_classification(id, ucid)
+    WATCH_CACHE.delete(WATCH_CACHE.keys.first) if WATCH_CACHE.size >= 1024 && !WATCH_CACHE.has_key?(key)
+    cooldown = classification.nil? ? Math.max(15.minutes, CONFIG.channel_refresh_interval * 6) : 15.minutes
+    WATCH_CACHE[key] = {Time.utc + cooldown, classification}
+    classification
+  end
+
+  private def fetch_watch_classification(id : String, ucid : String) : Bool?
+    response = YT_POOL.client &.get("/watch?v=#{id}")
+    return unless response.status_code == 200
+
+    parse_watch_classification(response.body, id, ucid)
+  rescue ex
+    LOGGER.debug("Livestreams: unable to classify watch page #{id}: #{ex.message}")
+    nil
+  end
+
+  private def parse_watch_classification(body : String, id : String, ucid : String) : Bool?
+    match = body.match(/(?:window\["ytInitialPlayerResponse"\]|var\s+ytInitialPlayerResponse)\s*=\s*(\{.*?\});\s*<\/script>/m)
+    return unless match
+
+    player = JSON.parse(match[1])
+    details = player["videoDetails"]?
+    return unless details && details["videoId"]? == id && details["channelId"]? == ucid
+
+    live_content = details["isLiveContent"]?.try(&.as_bool?)
+    playability = player["playabilityStatus"]?
+    status = playability.try(&.["status"]?)
+    return false if status == "OK" && live_content == false
+
+    # YouTube also sets isLiveContent on premieres. Require the offline
+    # livestream slate and zero duration rather than the date or live flag alone.
+    return unless live_content == true && details["isUpcoming"]? == true && details["lengthSeconds"]? == "0"
+    return if details["isPremiere"]? == true || playability.try(&.["isPremiere"]?) == true
+
+    slate = playability.try &.dig?("liveStreamability", "liveStreamabilityRenderer", "offlineSlate", "liveStreamOfflineSlateRenderer")
+    true if status == "LIVE_STREAM_OFFLINE" && slate
+  end
 
   def classify_video(id : String, author : String, ucid : String) : Bool?
     cached = CACHE[ucid]?

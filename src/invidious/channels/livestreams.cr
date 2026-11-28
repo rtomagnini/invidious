@@ -5,6 +5,24 @@ module Invidious::Channels::Livestreams
   WATCH_CACHE = {} of {String, String} => Tuple(Time, Bool?)
 
   MAX_WATCH_LOOKUPS = 3
+  WATCH_RETRY_DELAY = 5.minutes
+
+  # Check unseen candidates first, then retry the ones checked least recently.
+  def classify_rss_candidates(ids : Array(String), ucid : String) : Hash(String, Bool)
+    ordered = ids.uniq.sort_by { |id| WATCH_CACHE[{id, ucid}]?.try(&.first) || Time.unix(0) }
+    classifications = {} of String => Bool
+    remaining = MAX_WATCH_LOOKUPS
+
+    ordered.each do |id|
+      result = probe_watch_page(id, ucid) do
+        next false if remaining <= 0
+        remaining -= 1
+        true
+      end
+      classifications[id] = result unless result.nil?
+    end
+    classifications
+  end
 
   # A scheduled livestream can be in RSS before it appears in the Streams tab.
   # Cache unresolved lookups too, so transient upstream failures can be retried
@@ -18,26 +36,80 @@ module Invidious::Channels::Livestreams
 
     classification = fetch_watch_classification(id, ucid)
     WATCH_CACHE.delete(WATCH_CACHE.keys.first) if WATCH_CACHE.size >= 1024 && !WATCH_CACHE.has_key?(key)
-    cooldown = classification.nil? ? Math.max(15.minutes, CONFIG.channel_refresh_interval * 6) : 15.minutes
+    cooldown = classification.nil? ? WATCH_RETRY_DELAY : 15.minutes
     WATCH_CACHE[key] = {Time.utc + cooldown, classification}
+    LOGGER.info("Livestreams: classified scheduled RSS video #{id} (#{ucid})") if classification == true
     classification
   end
 
   private def fetch_watch_classification(id : String, ucid : String) : Bool?
-    response = YT_POOL.client &.get("/watch?v=#{id}")
-    return unless response.status_code == 200
+    result = classify_from_watch_page(id, ucid)
+    return result unless result.nil?
 
-    parse_watch_classification(response.body, id, ucid)
+    if player = YoutubeAPI.player(video_id: id)
+      result = classify_player(JSON::Any.new(player), id, ucid)
+      LOGGER.debug("Livestreams: player fallback unresolved for #{id}") if result.nil?
+    end
+    result
   rescue ex
-    LOGGER.debug("Livestreams: unable to classify watch page #{id}: #{ex.message}")
+    LOGGER.debug("Livestreams: player lookup failed for #{id}: #{ex.message}")
     nil
   end
 
-  private def parse_watch_classification(body : String, id : String, ucid : String) : Bool?
-    match = body.match(/(?:window\["ytInitialPlayerResponse"\]|var\s+ytInitialPlayerResponse)\s*=\s*(\{.*?\});\s*<\/script>/m)
-    return unless match
+  private def classify_from_watch_page(id : String, ucid : String) : Bool?
+    response = YT_POOL.client &.get("/watch?v=#{id}")
+    unless response.status_code == 200
+      LOGGER.debug("Livestreams: watch page returned HTTP #{response.status_code} for #{id}")
+      return
+    end
 
-    player = JSON.parse(match[1])
+    player = extract_watch_player(response.body)
+    unless player
+      LOGGER.debug("Livestreams: watch page player data missing for #{id}")
+      return
+    end
+
+    result = classify_player(player, id, ucid)
+    LOGGER.debug("Livestreams: watch page player data unresolved for #{id}") if result.nil?
+    result
+  rescue ex
+    LOGGER.debug("Livestreams: watch page lookup failed for #{id}: #{ex.message}")
+    nil
+  end
+
+  # Only read the JSON object. YouTube can append other JavaScript before </script>.
+  private def extract_watch_player(body : String) : JSON::Any?
+    assignment = body.match(/(?:window\s*\[\s*["']ytInitialPlayerResponse["']\s*\]|\bytInitialPlayerResponse)\s*=\s*(?=\{)/)
+    return unless assignment
+
+    start = assignment.byte_end
+    depth = 0
+    in_string = false
+    escaped = false
+
+    body.to_slice[start..].each_with_index do |byte, index|
+      if in_string
+        if escaped
+          escaped = false
+        elsif byte == '\\'.ord
+          escaped = true
+        elsif byte == '"'.ord
+          in_string = false
+        end
+      elsif byte == '"'.ord
+        in_string = true
+      elsif byte == '{'.ord
+        depth += 1
+      elsif byte == '}'.ord
+        depth -= 1
+        return JSON.parse(body.byte_slice(start, index + 1)) if depth == 0
+      end
+    end
+
+    nil
+  end
+
+  private def classify_player(player : JSON::Any, id : String, ucid : String) : Bool?
     details = player["videoDetails"]?
     return unless details && details["videoId"]? == id && details["channelId"]? == ucid
 
